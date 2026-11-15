@@ -1,0 +1,1102 @@
+{
+  "model": "gpt-5.4-mini",
+  "reasoning_effort": "low",
+  "ranAt": "2026-11-15T18:55:40.510Z",
+  "cases": 30,
+  "runs": [
+    {
+      "mode": "Fast",
+      "run": 1,
+      "latencyMs": 13600,
+      "tokens": 5029,
+      "responseIds": [
+        "chatcmpl-EkZe52HnwuNQaVQFEhs65QQHLmitj",
+        "chatcmpl-EkZeBkbZ1qk5jZnuTpVtltvrl3WZ0"
+      ],
+      "failures": [],
+      "raw": {
+        "correct": 29,
+        "dangerous": 0,
+        "questions": 6,
+        "wrong": [
+          "A09:ask->income"
+        ]
+      },
+      "guarded": {
+        "correct": 29,
+        "dangerous": 0,
+        "questions": 6,
+        "wrong": [
+          "A09:ask->income"
+        ]
+      },
+      "perCase": [
+        {
+          "id": "A01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A03",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "A05",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "A06",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "A07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "A08",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "A09",
+          "expect": "ask",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A10",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "other_income",
+          "guards": []
+        },
+        {
+          "id": "A11",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A12",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A13",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A14",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "A15",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B03",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "B04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B05",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "gift?",
+          "guards": []
+        },
+        {
+          "id": "B06",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B08",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "salary",
+          "guards": []
+        },
+        {
+          "id": "B09",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        },
+        {
+          "id": "B10",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "loan?",
+          "guards": []
+        },
+        {
+          "id": "B11",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B12",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B13",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B14",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "gift?",
+          "guards": []
+        },
+        {
+          "id": "B15",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "Fast",
+      "run": 2,
+      "latencyMs": 11978,
+      "tokens": 4901,
+      "responseIds": [
+        "chatcmpl-EkZeI72mzisTZXlSVxGrp3FdE0BGP",
+        "chatcmpl-EkZeOTPKBRNDp2EbMBKcZkEEjwwiK"
+      ],
+      "failures": [],
+      "raw": {
+        "correct": 28,
+        "dangerous": 0,
+        "questions": 7,
+        "wrong": [
+          "A14:not_income->ask",
+          "B14:ask->income"
+        ]
+      },
+      "guarded": {
+        "correct": 28,
+        "dangerous": 0,
+        "questions": 7,
+        "wrong": [
+          "A14:not_income->ask",
+          "B14:ask->income"
+        ]
+      },
+      "perCase": [
+        {
+          "id": "A01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A03",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "A05",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "A06",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "A07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "A08",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "A09",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "client_payment?",
+          "guards": []
+        },
+        {
+          "id": "A10",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "other_income",
+          "guards": []
+        },
+        {
+          "id": "A11",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A12",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A13",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A14",
+          "expect": "not_income",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "own_transfer?",
+          "guards": []
+        },
+        {
+          "id": "A15",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "salary",
+          "guards": []
+        },
+        {
+          "id": "B02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B03",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "B04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B05",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "B06",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B08",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "salary",
+          "guards": []
+        },
+        {
+          "id": "B09",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        },
+        {
+          "id": "B10",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "B11",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B12",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B13",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B14",
+          "expect": "ask",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B15",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "Careful",
+      "run": 1,
+      "latencyMs": 49867,
+      "tokens": 4855,
+      "responseIds": [
+        "chatcmpl-EkZeUFZLYAAPckVAKC4t99Nxcnz9G",
+        "chatcmpl-EkZetkZ5E2dCWquwVu67o8LtTWe8u"
+      ],
+      "failures": [],
+      "raw": {
+        "correct": 29,
+        "dangerous": 0,
+        "questions": 8,
+        "wrong": [
+          "A14:not_income->ask"
+        ]
+      },
+      "guarded": {
+        "correct": 29,
+        "dangerous": 0,
+        "questions": 8,
+        "wrong": [
+          "A14:not_income->ask"
+        ]
+      },
+      "perCase": [
+        {
+          "id": "A01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A03",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "A05",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "A06",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "gift?",
+          "guards": []
+        },
+        {
+          "id": "A07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "A08",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "A09",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "client_payment?",
+          "guards": []
+        },
+        {
+          "id": "A10",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "other_income",
+          "guards": []
+        },
+        {
+          "id": "A11",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A12",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A13",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A14",
+          "expect": "not_income",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "own_transfer?",
+          "guards": []
+        },
+        {
+          "id": "A15",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B03",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "B04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B05",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "B06",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B08",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "salary",
+          "guards": []
+        },
+        {
+          "id": "B09",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        },
+        {
+          "id": "B10",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "B11",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B12",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B13",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B14",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "B15",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "Careful",
+      "run": 2,
+      "latencyMs": 49281,
+      "tokens": 5196,
+      "responseIds": [
+        "chatcmpl-EkZfHl4Xlgc6P2Lrn3ekN6R2GeExd",
+        "chatcmpl-EkZfhAbZ4OXvaMEjE6JnBJy8r8cSz"
+      ],
+      "failures": [],
+      "raw": {
+        "correct": 29,
+        "dangerous": 0,
+        "questions": 10,
+        "wrong": [
+          "A05:not_income->ask"
+        ]
+      },
+      "guarded": {
+        "correct": 29,
+        "dangerous": 0,
+        "questions": 10,
+        "wrong": [
+          "A05:not_income->ask"
+        ]
+      },
+      "perCase": [
+        {
+          "id": "A01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A03",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "A05",
+          "expect": "not_income",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "gift?",
+          "guards": []
+        },
+        {
+          "id": "A06",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": []
+        },
+        {
+          "id": "A07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "A08",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "A09",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "client_payment?",
+          "guards": []
+        },
+        {
+          "id": "A10",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "other_income",
+          "guards": []
+        },
+        {
+          "id": "A11",
+          "expect": "income",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "client_payment?",
+          "guards": []
+        },
+        {
+          "id": "A12",
+          "expect": "income",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "client_payment?",
+          "guards": []
+        },
+        {
+          "id": "A13",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "A14",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "A15",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B01",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B02",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B03",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "own_transfer",
+          "guards": []
+        },
+        {
+          "id": "B04",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B05",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "gift?",
+          "guards": []
+        },
+        {
+          "id": "B06",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "loan",
+          "guards": []
+        },
+        {
+          "id": "B07",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B08",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "salary",
+          "guards": []
+        },
+        {
+          "id": "B09",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        },
+        {
+          "id": "B10",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "gift?",
+          "guards": []
+        },
+        {
+          "id": "B11",
+          "expect": "income",
+          "raw": "income",
+          "guarded": "income",
+          "model": "client_payment",
+          "guards": []
+        },
+        {
+          "id": "B12",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "gift",
+          "guards": []
+        },
+        {
+          "id": "B13",
+          "expect": "not_income",
+          "raw": "not_income",
+          "guarded": "not_income",
+          "model": "refund",
+          "guards": []
+        },
+        {
+          "id": "B14",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "gift?",
+          "guards": []
+        },
+        {
+          "id": "B15",
+          "expect": "ask",
+          "raw": "ask",
+          "guarded": "ask",
+          "model": "unclear?",
+          "guards": [
+            "INSTRUCTION"
+          ]
+        }
+      ]
+    }
+  ]
+}
