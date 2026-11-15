@@ -22,9 +22,9 @@ Demo link
 
     https://na-income.vercel.app
 
-Write-up (898 characters)
+Write-up (908 characters)
 
-    Na Income? turns a Nigerian bank statement into a 2026 personal income tax estimate under the Nigeria Tax Act 2025, in force since 1 January 2026. Paste a CSV or upload the PDF your bank sends: SERV Reasoning reads the rows, and code keeps a row only if its amount appears in the statement and the running balance adds up. SERV then says what each inflow was (client payment, salary, own transfer, gift, loan or refund), quoting the narration. Code does the amounts in kobo, the Act's bands and reliefs. When SERV is not sure, it asks one question, and each answer shows the new tax before you click. Four code rules can only make SERV stricter, and any SERV failure counts every inflow as income, so the figure is never an underestimate. SERV use: gpt-5.4-mini, rulebook system prompt, reasoning_effort low, strict json_schema, serv_shadow_agent in Careful mode. Tests and CI included. Open Track.
+    Na Income? turns a Nigerian bank statement into a 2026 personal income tax estimate under the Nigeria Tax Act 2025, in force since 1 January 2026. Paste a CSV or upload the PDF your bank sends: SERV Reasoning reads the rows, and code keeps a row only if its amount appears in the statement and the running balance adds up. SERV then says what each inflow was (client payment, salary, own transfer, gift, loan or refund), quoting the narration. Code does the amounts in kobo, the Act's bands and reliefs. When SERV is not sure, it asks one question, and each answer shows the new tax before you click. Any SERV failure counts every inflow as income, so the figure is never an underestimate. On a 30-case labelled set: 28 to 29 correct, zero dangerous errors. SERV use: gpt-5.4-mini, rulebook system prompt, reasoning_effort low, strict json_schema, serv_shadow_agent in Careful mode. Tests and CI. Open Track.
 
 Write-up, short version if a field is limited to about 500 characters (432 characters)
 
@@ -66,6 +66,7 @@ Attach the demo video or a screenshot of the questions panel to the post itself 
 - [x] README: problem, live link, try path, SERV usage, law with sources, what was built, tools
 - [x] PDF statements: upload or paste, rows verified by running balance
 - [x] Tests (npm test) and CI (GitHub Actions)
-- [ ] X post published, link copied
+- [x] Demo film: ~/Downloads/na-income-demo.mp4 (64.5 s, 1080p, narrated)
+- [ ] X post published with the film attached natively, link copied
 - [ ] Form submitted before 23:59 UTC
 - [ ] SERV credit balance checked; top up so judges' checks keep working through judging week
