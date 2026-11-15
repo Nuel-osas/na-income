@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { CATEGORIES } from "./categories";
 import { ModelOutputSchema, type Inflow, type ModelLine } from "./classify";
+import { EXTRACT_PROMPT, EXTRACT_SCHEMA, ExtractedSchema, type Extracted } from "./extract";
 
 // Server only. Imported by app/api/classify/route.ts; the key never reaches the browser.
 
@@ -78,14 +79,20 @@ export type ServAudit = {
   error: string | null;
 };
 
-export async function classifyWithServ(
-  holderName: string,
-  inflows: Inflow[],
-  opts: { careful?: boolean } = {},
-): Promise<{ lines: ModelLine[] | null; audit: ServAudit }> {
-  const SHADOW_ON = SHADOW_ALLOWED && opts.careful !== false;
-  const features = ["system prompt (compiled by SERV)", "json_schema strict"];
-  if (SHADOW_ON) features.push("serv_shadow_agent");
+/**
+ * One audited SERV chat-completions call with a strict json_schema reply.
+ * Never throws: any failure comes back as json=null with the reason in audit.error.
+ */
+export async function callServJson(opts: {
+  system: string;
+  user: unknown;
+  schemaName: string;
+  schema: Record<string, unknown>;
+  shadowHint?: string;
+  features: string[];
+}): Promise<{ json: unknown | null; audit: ServAudit }> {
+  const features = ["system prompt (compiled by SERV)", "json_schema strict", ...opts.features];
+  if (opts.shadowHint) features.push("serv_shadow_agent");
   if (SERV_MODEL.includes("-serv-")) features.push(SERV_MODEL.slice(SERV_MODEL.indexOf("-serv-") + 1));
 
   const audit: ServAudit = {
@@ -104,20 +111,10 @@ export async function classifyWithServ(
   const apiKey = process.env.SERV_API_KEY;
   if (!apiKey) {
     audit.error = "SERV_API_KEY is not set on the server";
-    return { lines: null, audit };
+    return { json: null, audit };
   }
 
   const client = new OpenAI({ baseURL: SERV_BASE_URL, apiKey, timeout: 75_000, maxRetries: 1 });
-  const user = {
-    account_holder: holderName,
-    inflows: inflows.map((i) => ({
-      id: i.id,
-      date: i.date,
-      narration: i.narration,
-      amount_naira: (i.amountKobo / 100).toFixed(2),
-    })),
-  };
-
   const t0 = Date.now();
   try {
     const { data, response } = await client.chat.completions
@@ -125,11 +122,11 @@ export async function classifyWithServ(
         model: SERV_MODEL,
         reasoning_effort: SERV_EFFORT,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: JSON.stringify(user) },
+          { role: "system", content: opts.system },
+          { role: "user", content: typeof opts.user === "string" ? opts.user : JSON.stringify(opts.user) },
         ],
-        response_format: { type: "json_schema", json_schema: { name: "inflow_classification", strict: true, schema: JSON_SCHEMA } },
-        ...(SHADOW_ON
+        response_format: { type: "json_schema", json_schema: { name: opts.schemaName, strict: true, schema: opts.schema } },
+        ...(opts.shadowHint
           ? {
               tools: [
                 {
@@ -139,7 +136,7 @@ export async function classifyWithServ(
                     parameters: {
                       type: "object",
                       properties: {
-                        hint: { type: "string", default: SHADOW_HINT },
+                        hint: { type: "string", default: opts.shadowHint },
                         max_iterations: { type: "integer", default: 2 },
                       },
                     },
@@ -163,26 +160,64 @@ export async function classifyWithServ(
         cached: data.usage.prompt_tokens_details?.cached_tokens ?? 0,
       };
     }
-
     const content = data.choices[0]?.message?.content ?? "";
-    let json: unknown;
     try {
-      json = JSON.parse(content);
+      const json = JSON.parse(content);
+      audit.ok = true;
+      return { json, audit };
     } catch {
       audit.error = `SERV reply was not JSON (finish_reason ${audit.finishReason})`;
-      return { lines: null, audit };
+      return { json: null, audit };
     }
-    const parsed = ModelOutputSchema.safeParse(json);
-    if (!parsed.success) {
-      audit.error = "SERV reply did not match the schema";
-      return { lines: null, audit };
-    }
-    audit.ok = true;
-    return { lines: parsed.data.lines, audit };
   } catch (e) {
     audit.latencyMs = Date.now() - t0;
     const err = e as { status?: number; message?: string };
     audit.error = `SERV call failed${err.status ? ` (${err.status})` : ""}: ${String(err.message ?? e).slice(0, 200)}`;
+    return { json: null, audit };
+  }
+}
+
+export async function classifyWithServ(
+  holderName: string,
+  inflows: Inflow[],
+  opts: { careful?: boolean } = {},
+): Promise<{ lines: ModelLine[] | null; audit: ServAudit }> {
+  const shadow = SHADOW_ALLOWED && opts.careful !== false;
+  const { json, audit } = await callServJson({
+    system: SYSTEM_PROMPT,
+    user: {
+      account_holder: holderName,
+      inflows: inflows.map((i) => ({ id: i.id, date: i.date, narration: i.narration, amount_naira: (i.amountKobo / 100).toFixed(2) })),
+    },
+    schemaName: "inflow_classification",
+    schema: JSON_SCHEMA as unknown as Record<string, unknown>,
+    shadowHint: shadow ? SHADOW_HINT : undefined,
+    features: [],
+  });
+  if (json === null) return { lines: null, audit };
+  const parsed = ModelOutputSchema.safeParse(json);
+  if (!parsed.success) {
+    audit.ok = false;
+    audit.error = "SERV reply did not match the schema";
     return { lines: null, audit };
   }
+  return { lines: parsed.data.lines, audit };
+}
+
+export async function extractWithServ(text: string): Promise<{ extracted: Extracted | null; audit: ServAudit }> {
+  const { json, audit } = await callServJson({
+    system: EXTRACT_PROMPT,
+    user: text,
+    schemaName: "statement_rows",
+    schema: EXTRACT_SCHEMA as unknown as Record<string, unknown>,
+    features: ["row extraction from statement text"],
+  });
+  if (json === null) return { extracted: null, audit };
+  const parsed = ExtractedSchema.safeParse(json);
+  if (!parsed.success) {
+    audit.ok = false;
+    audit.error = "SERV reply did not match the row schema";
+    return { extracted: null, audit };
+  }
+  return { extracted: parsed.data, audit };
 }
