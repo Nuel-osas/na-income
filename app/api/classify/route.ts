@@ -9,7 +9,7 @@ export const maxDuration = 120;
 const Body = z.object({
   holderName: z.string().trim().min(2).max(100),
   statement: z.string().min(10).max(200_000),
-  careful: z.boolean().default(true),
+  careful: z.boolean().default(false),
 });
 
 const MAX_INFLOWS = 120;

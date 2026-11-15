@@ -108,7 +108,7 @@ export default function Checker() {
   const [rent, setRent] = useState(String(first.annualRent));
   const [expenses, setExpenses] = useState(String(first.expenses));
   const [reliefs, setReliefs] = useState("0");
-  const [careful, setCareful] = useState(true);
+  const [careful, setCareful] = useState(false);
   const [loading, setLoading] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
