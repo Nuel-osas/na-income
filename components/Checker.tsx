@@ -84,6 +84,9 @@ function koboFromInput(v: string): number | null {
   return k === null || k < 0 ? null : k;
 }
 
+/** Display only: round kobo to the nearest naira. The maths keeps kobo. */
+const wholeNaira = (kobo: number) => Math.round(kobo / 100) * 100;
+
 function chipClass(cat: Category, pending: boolean) {
   if (pending) return "border border-dashed border-open text-open";
   return COUNTS_AS_INCOME[cat] ? "bg-income/15 text-income" : "bg-free/15 text-free";
@@ -184,8 +187,8 @@ export default function Checker() {
     return summarize(result.lines, { ...answers, [id]: cat }, expK!, rentK!, relK!).now.taxKobo;
   }
 
-  const pending = result?.lines.filter((d) => effectiveCategory(d, answers).pending) ?? [];
-  const answeredLines = result?.lines.filter((d) => answers[d.id]) ?? [];
+  // Lines SERV (or a code rule) was unsure about stay in statement order, answered or not, so cards don't jump.
+  const asked = result?.lines.filter((d) => !d.sure) ?? [];
   const showGiftQuote = result?.lines.some((d) => /\bgift\b/i.test(d.narration) && d.category !== "gift");
 
   return (
@@ -291,11 +294,11 @@ export default function Checker() {
           <section className="mb-6 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
             <div className="rounded-xl border border-line bg-panel p-5">
               <div className="text-sm text-muted">Estimated 2026 personal income tax</div>
-              <div className="num mt-1 text-5xl font-semibold tracking-tight">{formatNaira(summary.now.taxKobo)}</div>
+              <div className="num mt-1 text-5xl font-semibold tracking-tight">{formatNaira(wholeNaira(summary.now.taxKobo))}</div>
               {summary.open > 0 ? (
                 <div className="mt-2 text-sm text-muted">
                   <span className="text-open">{summary.open} open question{summary.open === 1 ? "" : "s"}</span> counted as income for now. If they
-                  all go your way: <span className="num text-text">{formatNaira(summary.best.taxKobo)}</span>
+                  all go your way: <span className="num text-text">{formatNaira(wholeNaira(summary.best.taxKobo))}</span>
                 </div>
               ) : (
                 <div className="mt-2 text-sm text-free">Every inflow is settled.</div>
@@ -328,7 +331,7 @@ export default function Checker() {
             </div>
           </section>
 
-          {(pending.length > 0 || answeredLines.length > 0) && (
+          {asked.length > 0 && (
             <section className="mb-6 rounded-xl border border-open/40 bg-panel p-5">
               <div className="mb-1 font-medium">Questions only you can answer</div>
               <p className="mb-4 text-sm text-muted">Each answer changes the number above. Nothing is sent anywhere; the maths runs in your browser.</p>
@@ -341,7 +344,7 @@ export default function Checker() {
                 </blockquote>
               )}
               <div className="grid gap-3 md:grid-cols-2">
-                {[...pending, ...answeredLines.filter((d) => !pending.includes(d))].map((d) => (
+                {asked.map((d) => (
                   <div key={d.id} className="rounded-lg border border-line bg-panel-2 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="font-mono text-xs break-all text-muted">{d.narration}</div>
@@ -367,7 +370,7 @@ export default function Checker() {
                             }`}
                           >
                             {ANSWER_LABEL[o]}
-                            {p !== null && <span className="num ml-2 text-xs text-muted">→ {formatNaira(p)}</span>}
+                            {p !== null && <span className="num ml-2 text-xs text-muted">→ {formatNaira(wholeNaira(p))}</span>}
                           </button>
                         );
                       })}
