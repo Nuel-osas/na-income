@@ -66,6 +66,19 @@ They can only make the result more careful: turn a sure answer into a question, 
 
 An open question counts as income until answered. The headline shows the tax now and the tax if every open answer goes your way.
 
+### Measured
+
+A labelled eval of 30 synthetic narrations ([`eval/`](eval/README.md)): labels committed before the first run, 8 SERV calls, gpt-5.4-mini.
+
+| Mode | Correct (2 runs) | Dangerous errors | Questions asked | Latency per 15 lines |
+|---|---|---|---|---|
+| Fast, raw SERV | 29, 28 of 30 | 0, 0 | 6, 7 | about 6 s |
+| Fast, after code rules | 29, 28 of 30 | 0, 0 | 6, 7 | same |
+| Careful (shadow agent), raw | 29, 29 of 30 | 0, 0 | 8, 10 | about 25 s |
+| Careful, after code rules | 29, 29 of 30 | 0, 0 | 8, 10 | same |
+
+No run treated income or an ambiguous line as sure non-income. The code rules changed no outcome on this set (the injection rule fired, but SERV had already flagged those lines). Careful mode did not raise the score: it traded skipped questions for extra ones and took about four times as long. The set is small, synthetic and labelled by us.
+
 ## 5. The law it applies
 
 Checked against the certified text of the Nigeria Tax Act 2025 ([PDF](https://media.premiumtimesng.com/wp-content/files/2026/01/Final-Approved-Copy-for-Print-NIGERIA-TAX-ACT-2025.pdf)) and the Nigeria Tax Administration Act 2025.
