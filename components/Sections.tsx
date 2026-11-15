@@ -14,6 +14,7 @@ export function SiteHeader() {
           {[
             ["Check", "#check"],
             ["How it works", "#how"],
+            ["Pricing", "#pricing"],
             ["The law", "#law"],
           ].map(([label, href]) => (
             <a key={href} href={href} className="rounded-full px-4 py-1.5 text-sm text-muted transition hover:text-paper">
@@ -145,6 +146,72 @@ export function HowItWorks() {
   );
 }
 
+const PLANS = [
+  {
+    who: "Anyone",
+    name: "Estimate",
+    price: "Free",
+    per: "",
+    lines: ["Paste a CSV or upload a PDF", "Answer SERV's questions", "See your 2026 tax and every line's basis"],
+  },
+  {
+    who: "Freelancers and traders",
+    name: "Filing pack",
+    price: "₦2,500",
+    per: "per year",
+    lines: ["Classified statement and your answers as a PDF", "Computation laid out for your State IRS return", "Re-check as many statements as you need"],
+  },
+  {
+    who: "Accountants",
+    name: "Practice",
+    price: "₦15,000",
+    per: "per month",
+    lines: ["50 client statements a month", "Every SERV reason and code rule in the export", "Replaces sorting client statements by hand"],
+  },
+  {
+    who: "Fintechs and payout apps",
+    name: "API",
+    price: "₦150",
+    per: "per statement",
+    lines: ["The same /api/classify endpoint", "Run on your users' own transaction data", "\"Estimate my tax\" inside your app"],
+  },
+];
+
+export function Pricing() {
+  return (
+    <section id="pricing" className="scroll-mt-24 pb-20">
+      <SectionHead n="06" kicker="Who pays" title="A tax people must file">
+        <span className="mono-label">Illustrative prices, to be tested</span>
+      </SectionHead>
+      <div className="grid gap-px overflow-hidden rounded-[4px] border border-line bg-line md:grid-cols-2 xl:grid-cols-4">
+        {PLANS.map((p, i) => (
+          <div key={p.name} className={`flex flex-col p-6 ${i === 0 ? "silver-fill" : "bg-ink-2"}`}>
+            <div className={`mono-label ${i === 0 ? "!text-ink/60" : ""}`}>{p.who}</div>
+            <div className="mt-6 text-[19px] font-medium tracking-tight">{p.name}</div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="pixel text-[44px] leading-none">{p.price}</span>
+              {p.per && <span className={`mono-label ${i === 0 ? "!text-ink/60" : ""}`}>{p.per}</span>}
+            </div>
+            <ul className={`mt-6 flex flex-col gap-2 text-[14px] leading-relaxed ${i === 0 ? "text-ink/80" : "text-paper/75"}`}>
+              {p.lines.map((l) => (
+                <li key={l} className="flex gap-2">
+                  <span aria-hidden className={`mt-[9px] h-[5px] w-[5px] flex-none ${i === 0 ? "bg-ink/60" : "bg-silver"}`} />
+                  {l}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 max-w-[820px] text-[13.5px] leading-relaxed text-muted">
+        Why people pay: every resident with freelance, trade or side income must file with their State IRS each year, and the tax office can already see
+        BVN-linked inflows. One check costs about 3,000 tokens of gpt-5.4-mini on SERV (shown per check in the audit panel), so the paid tiers carry the
+        inference cost with room to spare.
+      </p>
+    </section>
+  );
+}
+
 const LAW: [string, string, string][] = [
   ["Bands: first ₦800,000 at 0%, then 15, 18, 21, 23 and 25%", "NTA s.58, Fourth Schedule", NTA_PDF],
   ["Rent relief: 20% of annual rent, at most ₦500,000", "NTA s.30(2)(a)(vi)", NTA_PDF],
@@ -164,7 +231,7 @@ const LAW: [string, string, string][] = [
 export function LawTable() {
   return (
     <section id="law" className="scroll-mt-24 pb-20">
-      <SectionHead n="06" kicker="The law it applies" title="Every rule, cited">
+      <SectionHead n="07" kicker="The law it applies" title="Every rule, cited">
         <a href={NTA_PDF} target="_blank" rel="noreferrer" className="mono-label !text-silver hover:!text-paper">
           Read the certified Act ↗
         </a>
