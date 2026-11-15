@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ANSWER_LABEL, COUNTS_AS_INCOME, LABEL, type Category } from "@/lib/categories";
 import { effectiveCategory, summarize, type Decided } from "@/lib/classify";
 import { parseNairaToKobo } from "@/lib/money";
+import { PdfPasswordError, pdfToText } from "@/lib/pdf-text";
 import { BASIS, GIFT_LABEL_QUOTE, NTA_PDF } from "@/lib/rules";
 import { SAMPLES } from "@/lib/samples";
 import { Money } from "./Money";
@@ -25,10 +26,15 @@ type Audit = {
 };
 
 type Result = {
+  mode: "csv" | "text";
   lines: Decided[];
   outflowCount: number;
   skipped: { line: number; text: string; why: string }[];
   audit: Audit;
+  extraction: {
+    audit: Audit;
+    stats: { extracted: number; kept: number; balanceVerified: number; mismatched: number; unverified: number; flipped: number };
+  } | null;
 };
 
 type LogEntry = {
@@ -90,7 +96,9 @@ function chipClass(cat: Category, pending: boolean) {
   return COUNTS_AS_INCOME[cat] ? "chip chip-income" : "chip chip-free";
 }
 
-const SAMPLE_TAGS: Record<string, string> = { designer: "Freelancer", trader: "Trader", tricky: "Adversarial" };
+const SAMPLE_TAGS: Record<string, string> = { designer: "Freelancer", trader: "Trader", tricky: "Adversarial", pdf: "From a PDF" };
+
+const looksLikeCsv = (t: string) => /[,\t;|]/.test(t.split("\n").find((l) => l.trim()) ?? "");
 
 export default function Checker() {
   const first = SAMPLES[0];
@@ -107,6 +115,34 @@ export default function Checker() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [answers, setAnswers] = useState<Record<string, Category>>({});
+  const [pdfNote, setPdfNote] = useState<string | null>(null);
+  const [pdfPassword, setPdfPassword] = useState<{ file: File; wrong: boolean } | null>(null);
+  const [pwd, setPwd] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function readPdf(file: File, password?: string) {
+    setPdfNote(`Reading ${file.name} in your browser…`);
+    setError(null);
+    try {
+      const { text, pages } = await pdfToText(file, password);
+      setPdfPassword(null);
+      setPwd("");
+      if (!text.trim()) {
+        setPdfNote(null);
+        setError("That PDF has no selectable text (it may be a scan). Export a text PDF or CSV from your bank app.");
+        return;
+      }
+      setStatement(text);
+      setSampleKey(null);
+      setResult(null);
+      setAnswers({});
+      setPdfNote(`${file.name}: ${pages} page${pages === 1 ? "" : "s"} read in your browser. Only this text is sent for checking.`);
+    } catch (e) {
+      setPdfNote(null);
+      if (e instanceof PdfPasswordError) setPdfPassword({ file, wrong: e.wrong });
+      else setError((e as Error).message);
+    }
+  }
 
   useEffect(() => {
     if (startedAt === null) return;
@@ -139,6 +175,8 @@ export default function Checker() {
     setResult(null);
     setAnswers({});
     setError(null);
+    setPdfNote(null);
+    setPdfPassword(null);
   }
 
   async function check() {
@@ -209,7 +247,7 @@ export default function Checker() {
       {/* 01 · samples */}
       <section className="pb-14">
         <SectionHead n="01" kicker="Pick a statement" title="Try a statement" />
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {SAMPLES.map((s, i) => {
             const active = sampleKey === s.key;
             return (
@@ -243,9 +281,46 @@ export default function Checker() {
         <SectionHead n="02" kicker="Your statement" title="Paste and check" />
         <div className="panel grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_320px]">
           <div className="flex flex-col gap-2">
-            <label className="mono-label" htmlFor="stmt">
-              Bank statement · CSV with a header row
-            </label>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <label className="mono-label" htmlFor="stmt">
+                Bank statement · CSV, or text copied from a PDF
+              </label>
+              <div className="flex items-center gap-3">
+                <a href="/samples/sample-statement.pdf" download className="mono-label underline decoration-white/20 underline-offset-4 hover:!text-paper">
+                  Sample PDF ↓
+                </a>
+                <button type="button" className="btn-paper !py-1.5 !text-[13px]" onClick={() => fileRef.current?.click()}>
+                  Upload PDF
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) readPdf(f);
+                  }}
+                />
+              </div>
+            </div>
+            {pdfPassword && (
+              <form
+                className="flex flex-wrap items-center gap-2 rounded-[4px] border border-line bg-white/[0.03] p-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  readPdf(pdfPassword.file, pwd);
+                }}
+              >
+                <span className="text-[13px] text-paper/80">
+                  {pdfPassword.wrong ? "That password did not open it. Try again:" : "This statement is password-protected (banks often send them that way). It is unlocked here in your browser:"}
+                </span>
+                <input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} className="field !w-48 !py-1.5 text-[14px]" autoComplete="off" />
+                <button className="btn-paper !py-1.5 !text-[13px]">Unlock</button>
+              </form>
+            )}
+            {pdfNote && <span className="text-[12.5px] text-silver">{pdfNote}</span>}
             <textarea
               id="stmt"
               value={statement}
@@ -256,7 +331,10 @@ export default function Checker() {
               spellCheck={false}
               className="field h-[340px] resize-y font-mono text-[12px] leading-[1.7]"
             />
-            <span className="text-[12.5px] text-muted">Columns found by name: Date, Narration or Description, Credit/Debit, Money In/Out, or Amount with CR/DR.</span>
+            <span className="text-[12.5px] text-muted">
+              CSV columns are found by name (Date, Narration, Credit/Debit, Money In/Out, or Amount with CR/DR) and read by code alone. Anything else is read by
+              SERV, then every amount is checked against your text and the running balance.
+            </span>
           </div>
           <div className="flex flex-col gap-4">
             <Field label="Account holder" value={holder} onChange={setHolder} hint="Spots transfers between your own accounts" />
@@ -282,7 +360,9 @@ export default function Checker() {
               <div className="flex flex-col gap-2">
                 <div className="scan" />
                 <span className="text-[12.5px] leading-relaxed text-muted">
-                  {elapsed < 4
+                  {!looksLikeCsv(statement) && elapsed < 10
+                    ? "SERV is reading the rows out of your statement text; code then checks every amount against the running balance…"
+                    : elapsed < 4
                     ? "Sending the inflows to SERV Reasoning with the rulebook…"
                     : elapsed < 12
                       ? "SERV is walking each line through the rulebook…"
@@ -301,7 +381,15 @@ export default function Checker() {
         <>
           {/* 03 · estimate */}
           <section id="estimate" className="scroll-mt-24 pb-14 rise">
-            <SectionHead n="03" kicker="Your estimate" title="Tax year 2026" />
+            <SectionHead n="03" kicker="Your estimate" title="Tax year 2026">
+              <span className="mono-label rounded-[4px] border border-line px-3 py-2">
+                {result.mode === "csv"
+                  ? "Read by code from CSV"
+                  : result.extraction
+                    ? `Read by SERV from text · ${result.extraction.stats.kept} rows · ${result.extraction.stats.balanceVerified} balance-checked`
+                    : "Read from text"}
+              </span>
+            </SectionHead>
             {!result.audit.ok && (
               <div className="mb-4 rounded-[4px] border border-danger/50 bg-danger/10 p-4 text-[14px]">
                 <span className="font-medium text-danger">SERV could not classify this statement.</span>{" "}
@@ -472,7 +560,23 @@ export default function Checker() {
                     const basis = BASIS[pending ? "unclear" : cat];
                     return (
                       <tr key={d.id}>
-                        <td className="num font-mono text-[12px] whitespace-nowrap text-muted">{d.date}</td>
+                        <td className="num font-mono text-[12px] whitespace-nowrap text-muted">
+                          {d.date}
+                          {d.check && (
+                            <div
+                              className={`mt-1 text-[10px] tracking-[0.08em] uppercase ${d.check === "balance" ? "text-silver" : "text-danger"}`}
+                              title={
+                                d.check === "balance"
+                                  ? "Previous balance plus this amount equals the printed balance"
+                                  : d.check === "mismatch"
+                                    ? "The printed balances do not add up for this row"
+                                    : "No running balance to check this row against"
+                              }
+                            >
+                              {d.check === "balance" ? "balance ✓" : d.check === "mismatch" ? "balance ✗" : "unchecked"}
+                            </div>
+                          )}
+                        </td>
                         <td className="max-w-[260px] font-mono text-[12px] break-words">{d.narration}</td>
                         <td className="text-right whitespace-nowrap">
                           <Money kobo={d.amountKobo} />
@@ -526,6 +630,16 @@ export default function Checker() {
               <AuditRow k="tokens" v={result.audit.usage ? `${result.audit.usage.total} · ${result.audit.usage.cached} cached` : "not reported"} />
               <AuditRow k="checked_at" v={new Date(result.audit.checkedAt).toLocaleString()} />
               <AuditRow k="code_rules_fired" v={String(rulesFired)} />
+              {result.extraction && (
+                <>
+                  <AuditRow k="extract.latency" v={`${(result.extraction.audit.latencyMs / 1000).toFixed(1)} s`} />
+                  <AuditRow k="extract.response.id" v={result.extraction.audit.responseId ?? "none returned"} />
+                  <AuditRow
+                    k="extract.rows"
+                    v={`${result.extraction.stats.extracted} read · ${result.extraction.stats.kept} kept · ${result.extraction.stats.balanceVerified} balance ✓ · ${result.extraction.stats.mismatched} ✗ · ${result.extraction.stats.flipped} direction fixed`}
+                  />
+                </>
+              )}
             </div>
           </section>
         </>
