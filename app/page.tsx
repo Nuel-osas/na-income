@@ -1,5 +1,18 @@
 import Checker from "@/components/Checker";
+import { Hero, HowItWorks, LawTable, SiteFooter, SiteHeader, SplitBar } from "@/components/Sections";
 
 export default function Home() {
-  return <Checker />;
+  return (
+    <>
+      <SiteHeader />
+      <main className="mx-auto w-full max-w-[1240px] flex-1 px-4 sm:px-6">
+        <Hero />
+        <SplitBar />
+        <Checker />
+        <HowItWorks />
+        <LawTable />
+      </main>
+      <SiteFooter />
+    </>
+  );
 }

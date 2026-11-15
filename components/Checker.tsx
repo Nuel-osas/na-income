@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { ANSWER_LABEL, COUNTS_AS_INCOME, LABEL, type Category } from "@/lib/categories";
 import { effectiveCategory, summarize, type Decided } from "@/lib/classify";
-import { formatNaira, parseNairaToKobo } from "@/lib/money";
+import { parseNairaToKobo } from "@/lib/money";
 import { BASIS, GIFT_LABEL_QUOTE, NTA_PDF } from "@/lib/rules";
 import { SAMPLES } from "@/lib/samples";
+import { Money } from "./Money";
+import { SectionHead } from "./Sections";
 
 type Audit = {
   ok: boolean;
@@ -43,7 +45,6 @@ type LogEntry = {
 };
 
 const LOG_KEY = "na-income-log-v1";
-
 const LOG_EVENT = "na-income-log";
 
 function rawLog(): string {
@@ -84,13 +85,12 @@ function koboFromInput(v: string): number | null {
   return k === null || k < 0 ? null : k;
 }
 
-/** Display only: round kobo to the nearest naira. The maths keeps kobo. */
-const wholeNaira = (kobo: number) => Math.round(kobo / 100) * 100;
-
 function chipClass(cat: Category, pending: boolean) {
-  if (pending) return "border border-dashed border-open text-open";
-  return COUNTS_AS_INCOME[cat] ? "bg-income/15 text-income" : "bg-free/15 text-free";
+  if (pending) return "chip chip-open";
+  return COUNTS_AS_INCOME[cat] ? "chip chip-income" : "chip chip-free";
 }
+
+const SAMPLE_TAGS: Record<string, string> = { designer: "Freelancer", trader: "Trader", tricky: "Adversarial" };
 
 export default function Checker() {
   const first = SAMPLES[0];
@@ -107,6 +107,7 @@ export default function Checker() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [answers, setAnswers] = useState<Record<string, Category>>({});
+
   useEffect(() => {
     if (startedAt === null) return;
     const t = setInterval(() => setNow(Date.now()), 250);
@@ -161,19 +162,22 @@ export default function Checker() {
       const r = data as Result;
       setResult(r);
       const s = summarize(r.lines, {}, expK ?? 0, rentK ?? 0, relK ?? 0);
-      const entry: LogEntry = {
-        at: r.audit.checkedAt,
-        holder,
-        inflows: r.audit.inflows,
-        model: r.audit.model,
-        ok: r.audit.ok,
-        latencyMs: r.audit.latencyMs,
-        taxKobo: s.now.taxKobo,
-        open: s.open,
-        responseId: r.audit.responseId,
-        error: r.audit.error,
-      };
-      writeLog([entry, ...parseLog(rawLog())]);
+      writeLog([
+        {
+          at: r.audit.checkedAt,
+          holder,
+          inflows: r.audit.inflows,
+          model: r.audit.model,
+          ok: r.audit.ok,
+          latencyMs: r.audit.latencyMs,
+          taxKobo: s.now.taxKobo,
+          open: s.open,
+          responseId: r.audit.responseId,
+          error: r.audit.error,
+        },
+        ...parseLog(rawLog()),
+      ]);
+      requestAnimationFrame(() => document.getElementById("estimate")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch {
       setError("Could not reach the checker. Nothing was classified.");
     } finally {
@@ -190,192 +194,237 @@ export default function Checker() {
   // Lines SERV (or a code rule) was unsure about stay in statement order, answered or not, so cards don't jump.
   const asked = result?.lines.filter((d) => !d.sure) ?? [];
   const showGiftQuote = result?.lines.some((d) => /\bgift\b/i.test(d.narration) && d.category !== "gift");
+  const moneyIn = result?.lines.reduce((a, d) => a + d.amountKobo, 0) ?? 0;
+  const rulesFired = result?.lines.reduce((a, d) => a + d.guards.length, 0) ?? 0;
+  const split = { inc: 0, open: 0, free: 0 };
+  for (const d of result?.lines ?? []) {
+    const { cat, pending } = effectiveCategory(d, answers);
+    if (pending) split.open += d.amountKobo;
+    else if (COUNTS_AS_INCOME[cat]) split.inc += d.amountKobo;
+    else split.free += d.amountKobo;
+  }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
-      <header className="mb-8 flex flex-col gap-2">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">Na Income?</h1>
-          <span className="rounded border border-line px-2 py-0.5 text-xs text-muted">Nigeria Tax Act 2025 · tax year 2026</span>
+    <>
+      {/* 01 · samples */}
+      <section className="pb-14">
+        <SectionHead n="01" kicker="Pick a statement" title="Try a statement" />
+        <div className="grid gap-3 md:grid-cols-3">
+          {SAMPLES.map((s, i) => {
+            const active = sampleKey === s.key;
+            return (
+              <button
+                key={s.key}
+                onClick={() => loadSample(s.key)}
+                aria-pressed={active}
+                className={`relative min-h-[190px] overflow-hidden p-6 text-left transition ${active ? "panel-blue" : "panel hover:border-white/25"}`}
+              >
+                <span
+                  className="pix-deco"
+                  style={
+                    active
+                      ? undefined
+                      : ({ "--sq-a": "rgba(35,56,255,0.55)", "--sq-b": "rgba(123,136,255,0.35)", "--sq-c": "rgba(185,194,255,0.18)" } as React.CSSProperties)
+                  }
+                />
+                <div className={`mono-label ${active ? "!text-ice" : ""}`}>
+                  0{i + 1} / {SAMPLE_TAGS[s.key] ?? "Sample"}
+                </div>
+                <div className="mt-14 text-[19px] font-medium tracking-tight">{s.title}</div>
+                <div className={`mt-2 max-w-[34ch] text-[14px] leading-relaxed ${active ? "text-paper/85" : "text-muted"}`}>{s.blurb}</div>
+              </button>
+            );
+          })}
         </div>
-        <p className="max-w-3xl text-muted">
-          Paste a bank statement. <span className="text-text">SERV Reasoning</span> reads every inflow and says whether it is a client payment,
-          a gift, a loan, a refund or your own money moving. <span className="text-text">Code</span> does the maths with the Act&apos;s bands. When SERV
-          is not sure, it asks you one question, and your answer moves the number.
-        </p>
-      </header>
-
-      <section className="mb-6 grid gap-3 sm:grid-cols-3">
-        {SAMPLES.map((s) => (
-          <button
-            key={s.key}
-            onClick={() => loadSample(s.key)}
-            className={`rounded-lg border p-4 text-left transition ${
-              sampleKey === s.key ? "border-open bg-panel-2" : "border-line bg-panel hover:border-muted"
-            }`}
-          >
-            <div className="font-medium">{s.title}</div>
-            <div className="mt-1 text-sm text-muted">{s.blurb}</div>
-          </button>
-        ))}
       </section>
 
-      <section className="mb-8 grid gap-4 rounded-xl border border-line bg-panel p-4 sm:p-5 lg:grid-cols-[1fr_280px]">
-        <div className="flex flex-col gap-2">
-          <label className="text-sm text-muted" htmlFor="stmt">
-            Bank statement (CSV export, with a header row: Date, Narration, Credit/Debit or Amount)
-          </label>
-          <textarea
-            id="stmt"
-            value={statement}
-            onChange={(e) => {
-              setStatement(e.target.value);
-              setSampleKey(null);
-            }}
-            spellCheck={false}
-            className="h-64 w-full resize-y rounded-lg border border-line bg-bg p-3 font-mono text-xs leading-relaxed outline-none focus:border-open"
-          />
-        </div>
-        <div className="flex flex-col gap-3">
-          <Field label="Account holder's name" value={holder} onChange={setHolder} hint="Used to spot transfers between your own accounts" />
-          <Field label="Rent paid in 2026 (₦)" value={rent} onChange={setRent} invalid={rentK === null} hint="20% relief, at most ₦500,000 (s.30)" />
-          <Field label="Business expenses (₦)" value={expenses} onChange={setExpenses} invalid={expK === null} hint="Wholly and exclusively for the work (s.20)" />
-          <Field label="Pension, NHF, NHIS, life cover (₦)" value={reliefs} onChange={setReliefs} invalid={relK === null} hint="Other reliefs (s.30)" />
-          <div className="flex rounded-lg border border-line p-1 text-xs">
-            <button
-              onClick={() => setCareful(true)}
-              className={`flex-1 rounded-md px-2 py-1.5 ${careful ? "bg-panel-2 text-text" : "text-muted"}`}
-              title="SERV Shadow Agent validates the draft and has it revised before you see it"
-            >
-              Careful · Shadow Agent
-            </button>
-            <button
-              onClick={() => setCareful(false)}
-              className={`flex-1 rounded-md px-2 py-1.5 ${!careful ? "bg-panel-2 text-text" : "text-muted"}`}
-              title="One SERV pass, no validation loop"
-            >
-              Fast · one pass
-            </button>
+      {/* 02 · statement */}
+      <section id="check" className="scroll-mt-24 pb-14">
+        <SectionHead n="02" kicker="Your statement" title="Paste and check" />
+        <div className="panel grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_320px]">
+          <div className="flex flex-col gap-2">
+            <label className="mono-label" htmlFor="stmt">
+              Bank statement · CSV with a header row
+            </label>
+            <textarea
+              id="stmt"
+              value={statement}
+              onChange={(e) => {
+                setStatement(e.target.value);
+                setSampleKey(null);
+              }}
+              spellCheck={false}
+              className="field h-[340px] resize-y font-mono text-[12px] leading-[1.7]"
+            />
+            <span className="text-[12.5px] text-muted">Columns found by name: Date, Narration or Description, Credit/Debit, Money In/Out, or Amount with CR/DR.</span>
           </div>
-          <button
-            onClick={check}
-            disabled={loading || !inputsValid || holder.trim().length < 2}
-            className="mt-1 rounded-lg bg-text px-4 py-3 font-medium text-bg transition hover:opacity-90 disabled:opacity-40"
-          >
-            {loading ? `SERV is reading every line… ${elapsed.toFixed(0)}s` : "Check my statement"}
-          </button>
-          {loading && (
-            <div className="text-xs leading-relaxed text-muted">
-              {elapsed < 4
-                ? "Sending the inflows to SERV Reasoning with the rulebook…"
-                : elapsed < 12
-                  ? "SERV is walking each line through the rulebook…"
-                  : careful
-                    ? "Shadow Agent is checking the draft: every line once, every reason quoted, every doubt turned into a question…"
-                    : "Almost there…"}
+          <div className="flex flex-col gap-4">
+            <Field label="Account holder" value={holder} onChange={setHolder} hint="Spots transfers between your own accounts" />
+            <Field label="Rent paid in 2026" value={rent} onChange={setRent} invalid={rentK === null} hint="20% relief, at most ₦500,000 · s.30" money />
+            <Field label="Business expenses" value={expenses} onChange={setExpenses} invalid={expK === null} hint="Wholly and exclusively for the work · s.20" money />
+            <Field label="Pension, NHF, NHIS, life cover" value={reliefs} onChange={setReliefs} invalid={relK === null} hint="Other reliefs · s.30" money />
+            <div className="flex flex-col gap-2">
+              <span className="mono-label">SERV mode</span>
+              <div className="tabs">
+                <button className="tab" aria-pressed={careful} onClick={() => setCareful(true)} title="serv_shadow_agent validates the draft and has it revised">
+                  Careful · Shadow agent
+                </button>
+                <button className="tab" aria-pressed={!careful} onClick={() => setCareful(false)} title="One SERV pass, no validation loop">
+                  Fast · one pass
+                </button>
+              </div>
             </div>
-          )}
+            <button className="cta mt-1" onClick={check} disabled={loading || !inputsValid || holder.trim().length < 2}>
+              <span>{loading ? `Reading · ${elapsed.toFixed(0)}s` : "Check my statement"}</span>
+              <span className="arrow-tile">{loading ? "…" : "→"}</span>
+            </button>
+            {loading && (
+              <div className="flex flex-col gap-2">
+                <div className="scan" />
+                <span className="text-[12.5px] leading-relaxed text-muted">
+                  {elapsed < 4
+                    ? "Sending the inflows to SERV Reasoning with the rulebook…"
+                    : elapsed < 12
+                      ? "SERV is walking each line through the rulebook…"
+                      : careful
+                        ? "Shadow agent is checking the draft: every line once, every reason quoted, every doubt a question…"
+                        : "Almost there…"}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
+        {error && <div className="mt-4 rounded-[4px] border border-danger/50 bg-danger/10 p-4 text-[14px] text-danger">{error}</div>}
       </section>
-
-      {error && <div className="mb-6 rounded-lg border border-danger/50 bg-danger/10 p-4 text-danger">{error}</div>}
 
       {result && summary && (
         <>
-          {!result.audit.ok && (
-            <div className="mb-6 rounded-lg border border-danger/50 bg-danger/10 p-4 text-sm">
-              <span className="font-medium text-danger">SERV could not classify this statement.</span>{" "}
-              <span className="text-muted">
-                Every inflow is counted as income until you answer, so the figure below is the most you could owe, not a guess. ({result.audit.error})
-              </span>
-            </div>
-          )}
-
-          <section className="mb-6 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-            <div className="rounded-xl border border-line bg-panel p-5">
-              <div className="text-sm text-muted">Estimated 2026 personal income tax</div>
-              <div className="num mt-1 text-5xl font-semibold tracking-tight">{formatNaira(wholeNaira(summary.now.taxKobo))}</div>
-              {summary.open > 0 ? (
-                <div className="mt-2 text-sm text-muted">
-                  <span className="text-open">{summary.open} open question{summary.open === 1 ? "" : "s"}</span> counted as income for now. If they
-                  all go your way: <span className="num text-text">{formatNaira(wholeNaira(summary.best.taxKobo))}</span>
-                </div>
-              ) : (
-                <div className="mt-2 text-sm text-free">Every inflow is settled.</div>
-              )}
-              <div className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                <Stat label="Money in" value={formatNaira(result.lines.reduce((a, d) => a + d.amountKobo, 0))} />
-                <Stat label="Counted as income" value={formatNaira(summary.now.incomeKobo)} tone="income" />
-                <Stat label="Not income" value={formatNaira(result.lines.reduce((a, d) => a + d.amountKobo, 0) - summary.now.incomeKobo)} tone="free" />
-                <Stat label="Lines read" value={`${result.lines.length} in · ${result.outflowCount} out`} />
+          {/* 03 · estimate */}
+          <section id="estimate" className="scroll-mt-24 pb-14 rise">
+            <SectionHead n="03" kicker="Your estimate" title="Tax year 2026" />
+            {!result.audit.ok && (
+              <div className="mb-4 rounded-[4px] border border-danger/50 bg-danger/10 p-4 text-[14px]">
+                <span className="font-medium text-danger">SERV could not classify this statement.</span>{" "}
+                <span className="text-paper/70">
+                  Every inflow is counted as income until you answer, so this is the most you could owe, not a guess. ({result.audit.error})
+                </span>
               </div>
-            </div>
-
-            <div className="rounded-xl border border-line bg-panel p-5 text-sm">
-              <div className="mb-3 text-muted">How the number is made (code, not the model)</div>
-              <Row k="Income" v={formatNaira(summary.now.incomeKobo)} />
-              <Row k="− Business expenses (s.20)" v={formatNaira(summary.now.expensesKobo)} />
-              <Row k="− Rent relief (s.30)" v={formatNaira(summary.now.rentReliefKobo)} />
-              <Row k="− Other reliefs (s.30)" v={formatNaira(summary.now.otherReliefsKobo)} />
-              <Row k="Chargeable income" v={formatNaira(summary.now.chargeableKobo)} strong />
-              <div className="my-2 border-t border-line" />
-              {summary.now.bands.map((b) => (
-                <Row key={b.label} k={`${b.label} at ${Math.round(b.rate * 100)}%`} v={formatNaira(b.taxKobo)} muted={b.taxedKobo === 0} />
-              ))}
-              <div className="mt-2 text-xs text-muted">
-                Rates: NTA s.58 and Fourth Schedule.{" "}
-                <a className="underline" href={NTA_PDF} target="_blank" rel="noreferrer">
-                  Read the Act
+            )}
+            <div className="grid gap-3 lg:grid-cols-[1.25fr_1fr]">
+              <div className="panel-blue relative flex flex-col overflow-hidden p-6 sm:p-8">
+                <span className="pix-deco bottom" />
+                <div className="mono-label !text-ice">Estimated personal income tax</div>
+                <div key={summary.now.taxKobo} className="pixel flash mt-6 text-[clamp(52px,8vw,112px)] leading-[0.95]">
+                  <Money kobo={summary.now.taxKobo} whole />
+                </div>
+                <div className="mt-6 max-w-[52ch] text-[15px] leading-relaxed text-paper/90">
+                  {summary.open > 0 ? (
+                    <>
+                      {summary.open} open question{summary.open === 1 ? "" : "s"} counted as income for now. If they all go your way:{" "}
+                      <Money kobo={summary.best.taxKobo} whole className="font-semibold" />
+                    </>
+                  ) : (
+                    "Every inflow is settled."
+                  )}
+                </div>
+                <div className="relative mt-auto pt-8 pr-0 sm:pr-32">
+                  <div className="flex h-3 w-full overflow-hidden rounded-[2px] bg-ink/40">
+                    {split.inc > 0 && <div className="bg-paper" style={{ width: `${(split.inc / moneyIn) * 100}%` }} />}
+                    {split.open > 0 && (
+                      <div
+                        style={{
+                          width: `${(split.open / moneyIn) * 100}%`,
+                          background: "repeating-linear-gradient(135deg, var(--ice) 0 3px, transparent 3px 6px)",
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[11px] tracking-[0.08em] text-ice uppercase">
+                    <span>
+                      <span className="mr-1.5 inline-block h-2 w-2 bg-paper" />
+                      Income <Money kobo={split.inc} whole />
+                    </span>
+                    <span>
+                      <span className="mr-1.5 inline-block h-2 w-2 bg-ice/70" />
+                      Open <Money kobo={split.open} whole />
+                    </span>
+                    <span>
+                      <span className="mr-1.5 inline-block h-2 w-2 bg-ink/50" />
+                      Not income <Money kobo={split.free} whole />
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="panel p-6">
+                <div className="mono-label mb-3">How the number is made · code, not the model</div>
+                <KV k="Income" v={<Money kobo={summary.now.incomeKobo} />} />
+                <KV k="− Business expenses · s.20" v={<Money kobo={summary.now.expensesKobo} />} />
+                <KV k="− Rent relief · s.30" v={<Money kobo={summary.now.rentReliefKobo} />} />
+                <KV k="− Other reliefs · s.30" v={<Money kobo={summary.now.otherReliefsKobo} />} />
+                <KV k="Chargeable income" v={<Money kobo={summary.now.chargeableKobo} />} strong />
+                <div className="my-3 h-px bg-line" />
+                {summary.now.bands.map((b) => (
+                  <KV key={b.label} k={`${b.label} at ${Math.round(b.rate * 100)}%`} v={<Money kobo={b.taxKobo} />} dim={b.taxedKobo === 0} />
+                ))}
+                <a href={NTA_PDF} target="_blank" rel="noreferrer" className="mono-label mt-3 inline-block !text-blue-l hover:!text-ice">
+                  Rates · NTA s.58, Fourth Schedule ↗
                 </a>
               </div>
             </div>
+            <div className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-line bg-line md:grid-cols-4">
+              <Stat label="Money in" value={<Money kobo={moneyIn} />} />
+              <Stat label="Counted as income" value={<Money kobo={summary.now.incomeKobo} />} tone="text-ice" />
+              <Stat label="Not income" value={<Money kobo={moneyIn - summary.now.incomeKobo} />} />
+              <Stat label="Lines read" value={`${result.lines.length} in · ${result.outflowCount} out`} />
+            </div>
           </section>
 
+          {/* 04 · questions */}
           {asked.length > 0 && (
-            <section className="mb-6 rounded-xl border border-open/40 bg-panel p-5">
-              <div className="mb-1 font-medium">Questions only you can answer</div>
-              <p className="mb-4 text-sm text-muted">Each answer changes the number above. Nothing is sent anywhere; the maths runs in your browser.</p>
+            <section className="pb-14 rise">
+              <SectionHead n="04" kicker="Only you know" title="Answer, watch it move" />
               {showGiftQuote && (
-                <blockquote className="mb-4 border-l-2 border-income pl-3 text-sm">
-                  <span className="text-text">&ldquo;{GIFT_LABEL_QUOTE.text}&rdquo;</span>{" "}
-                  <a href={GIFT_LABEL_QUOTE.url} target="_blank" rel="noreferrer" className="text-muted underline">
-                    {GIFT_LABEL_QUOTE.who}
+                <blockquote className="mb-4 border-l-2 border-blue-l pl-4 text-[15px] leading-relaxed">
+                  &ldquo;{GIFT_LABEL_QUOTE.text}&rdquo;{" "}
+                  <a href={GIFT_LABEL_QUOTE.url} target="_blank" rel="noreferrer" className="mono-label !text-blue-l hover:!text-ice">
+                    {GIFT_LABEL_QUOTE.who} ↗
                   </a>
                 </blockquote>
               )}
               <div className="grid gap-3 md:grid-cols-2">
-                {asked.map((d) => (
-                  <div key={d.id} className="rounded-lg border border-line bg-panel-2 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="font-mono text-xs break-all text-muted">{d.narration}</div>
-                      <div className="num shrink-0 font-medium">{formatNaira(d.amountKobo)}</div>
+                {asked.map((d, i) => (
+                  <div key={d.id} className="panel flex flex-col p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="pixel text-[28px] leading-none text-blue-l">Q{i + 1}</span>
+                      <Money kobo={d.amountKobo} className="pixel text-[28px] leading-none" />
                     </div>
-                    <div className="mt-2 text-sm">{d.question ?? "What was this money?"}</div>
-                    {d.reason && <div className="mt-1 text-xs text-muted">SERV: {d.reason}</div>}
+                    <div className="mt-4 font-mono text-[12px] break-all text-muted">
+                      {d.date} · {d.narration}
+                    </div>
+                    <div className="mt-3 text-[16px] leading-snug">{d.question ?? "What was this money?"}</div>
+                    {d.reason && <div className="mt-2 text-[13px] leading-relaxed text-paper/60">SERV · {d.reason}</div>}
                     {d.guards.map((g) => (
-                      <div key={g} className="mt-1 text-xs text-income">
-                        Code: {g}
+                      <div key={g} className="tag-rule mt-1.5">
+                        CODE · {g}
                       </div>
                     ))}
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       {d.options.map((o) => {
                         const p = preview(d.id, o);
-                        const active = answers[d.id] === o;
                         return (
-                          <button
-                            key={o}
-                            onClick={() => setAnswers((a) => ({ ...a, [d.id]: o }))}
-                            className={`rounded-md border px-3 py-1.5 text-sm transition ${
-                              active ? "border-open bg-open/15 text-text" : "border-line hover:border-muted"
-                            }`}
-                          >
+                          <button key={o} className="option" aria-pressed={answers[d.id] === o} onClick={() => setAnswers((a) => ({ ...a, [d.id]: o }))}>
                             {ANSWER_LABEL[o]}
-                            {p !== null && <span className="num ml-2 text-xs text-muted">→ {formatNaira(wholeNaira(p))}</span>}
+                            {p !== null && (
+                              <span className="preview">
+                                → <Money kobo={p} whole />
+                              </span>
+                            )}
                           </button>
                         );
                       })}
                       {answers[d.id] && (
                         <button
+                          className="mono-label px-2 underline hover:!text-paper"
                           onClick={() =>
                             setAnswers((a) => {
                               const n = { ...a };
@@ -383,7 +432,6 @@ export default function Checker() {
                               return n;
                             })
                           }
-                          className="px-2 text-xs text-muted underline"
                         >
                           undo
                         </button>
@@ -395,104 +443,117 @@ export default function Checker() {
             </section>
           )}
 
-          <section className="mb-6 overflow-hidden rounded-xl border border-line bg-panel">
-            <div className="border-b border-line p-4 font-medium">Every inflow, with its reason and its legal basis</div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[820px] text-sm">
-                <thead className="text-left text-xs text-muted">
-                  <tr className="border-b border-line">
-                    <th className="p-3 font-normal">Date</th>
-                    <th className="p-3 font-normal">Narration</th>
-                    <th className="p-3 text-right font-normal">Amount</th>
-                    <th className="p-3 font-normal">Class</th>
-                    <th className="p-3 font-normal">Why</th>
-                    <th className="p-3 font-normal">Basis</th>
+          {/* ledger */}
+          <section className="pb-14 rise">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <span className="eyebrow solid">Ledger</span>
+                <h3 className="display mt-3 text-[30px]">Every inflow, with its basis</h3>
+              </div>
+              <span className="mono-label">
+                {rulesFired} code rule{rulesFired === 1 ? "" : "s"} fired
+              </span>
+            </div>
+            <div className="panel overflow-x-auto">
+              <table className="ledger">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Narration</th>
+                    <th className="!text-right">Amount</th>
+                    <th>Class</th>
+                    <th>Why</th>
+                    <th>Basis</th>
                   </tr>
                 </thead>
                 <tbody>
                   {result.lines.map((d) => {
-                    const { cat, pending: isPending } = effectiveCategory(d, answers);
-                    const basis = BASIS[isPending ? "unclear" : cat];
+                    const { cat, pending } = effectiveCategory(d, answers);
+                    const basis = BASIS[pending ? "unclear" : cat];
                     return (
-                      <tr key={d.id} className="border-b border-line/60 align-top">
-                        <td className="num p-3 whitespace-nowrap text-muted">{d.date}</td>
-                        <td className="max-w-[260px] p-3 font-mono text-xs break-words">{d.narration}</td>
-                        <td className="num p-3 text-right whitespace-nowrap">{formatNaira(d.amountKobo)}</td>
-                        <td className="p-3">
-                          <span className={`inline-block rounded px-2 py-0.5 text-xs whitespace-nowrap ${chipClass(cat, isPending)}`}>
-                            {isPending ? `Ask · ${LABEL[cat]}?` : LABEL[cat]}
-                          </span>
-                          {answers[d.id] && <div className="mt-1 text-[11px] text-muted">your answer</div>}
+                      <tr key={d.id}>
+                        <td className="num font-mono text-[12px] whitespace-nowrap text-muted">{d.date}</td>
+                        <td className="max-w-[260px] font-mono text-[12px] break-words">{d.narration}</td>
+                        <td className="text-right whitespace-nowrap">
+                          <Money kobo={d.amountKobo} />
                         </td>
-                        <td className="max-w-[300px] p-3 text-xs text-muted">
+                        <td>
+                          <span className={chipClass(cat, pending)}>{pending ? `Ask · ${LABEL[cat]}?` : LABEL[cat]}</span>
+                          {answers[d.id] && <div className="mono-label mt-1.5 !text-[10px]">your answer</div>}
+                        </td>
+                        <td className="max-w-[300px] text-[13px] leading-relaxed text-paper/65">
                           {d.reason}
-                          {d.guards.length > 0 && <div className="mt-1 text-income">{d.guards.length} code rule{d.guards.length > 1 ? "s" : ""} applied</div>}
+                          {d.guards.length > 0 && (
+                            <div className="tag-rule mt-1">
+                              {d.guards.length} code rule{d.guards.length > 1 ? "s" : ""}
+                            </div>
+                          )}
                         </td>
-                        <td className="p-3 text-xs">
-                          <a href={basis.url} target="_blank" rel="noreferrer" className="underline decoration-line" title={basis.text}>
+                        <td className="text-[12.5px]">
+                          <a href={basis.url} target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-4 hover:decoration-ice" title={basis.text}>
                             {basis.cite}
                           </a>
-                          {basis.firm !== "act" && <div className="text-[11px] text-muted">{basis.firm === "guidance" ? "official guidance" : "not in the Act"}</div>}
+                          {basis.firm !== "act" && <div className="mono-label mt-1 !text-[10px]">{basis.firm === "guidance" ? "official guidance" : "not in the Act"}</div>}
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+              {result.skipped.length > 0 && (
+                <div className="border-t border-line p-4 text-[13px] text-danger">
+                  {result.skipped.length} line{result.skipped.length > 1 ? "s" : ""} could not be read and were not counted:{" "}
+                  {result.skipped.map((s) => `line ${s.line} (${s.why})`).join("; ")}
+                </div>
+              )}
             </div>
-            {result.skipped.length > 0 && (
-              <div className="border-t border-line p-4 text-xs text-danger">
-                {result.skipped.length} line{result.skipped.length > 1 ? "s" : ""} could not be read and were not counted:{" "}
-                {result.skipped.map((s) => `line ${s.line} (${s.why})`).join("; ")}
-              </div>
-            )}
           </section>
 
-          <section className="mb-6 rounded-xl border border-line bg-panel p-5 text-sm">
-            <div className="mb-3 font-medium">Audit: this check</div>
-            <div className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
-              <Row k="SERV status" v={result.audit.ok ? "classified" : `failed closed: ${result.audit.error}`} />
-              <Row k="Model" v={result.audit.model} mono />
-              <Row k="reasoning_effort" v={result.audit.reasoning_effort} mono />
-              <Row k="SERV features" v={result.audit.features.join(", ")} />
-              <Row k="Response id" v={result.audit.responseId ?? "none returned"} mono />
-              <Row k="Request id" v={result.audit.requestId ?? "none returned"} mono />
-              <Row k="Latency" v={`${(result.audit.latencyMs / 1000).toFixed(1)} s`} />
-              <Row
-                k="Tokens"
-                v={result.audit.usage ? `${result.audit.usage.total} (${result.audit.usage.cached} cached prompt)` : "not reported"}
-              />
-              <Row k="Checked at" v={new Date(result.audit.checkedAt).toLocaleString()} />
-              <Row k="Code rules fired" v={String(result.lines.reduce((a, d) => a + d.guards.length, 0))} />
+          {/* audit */}
+          <section className="pb-6 rise">
+            <div className="mb-4">
+              <span className="eyebrow solid">Audit</span>
+              <h3 className="display mt-3 text-[30px]">This check</h3>
+            </div>
+            <div className="panel grid gap-x-10 p-6 font-mono text-[12.5px] md:grid-cols-2">
+              <AuditRow k="serv.status" v={result.audit.ok ? "classified" : `failed closed · ${result.audit.error}`} tone={result.audit.ok ? "text-ice" : "text-danger"} />
+              <AuditRow k="model" v={result.audit.model} />
+              <AuditRow k="reasoning_effort" v={result.audit.reasoning_effort} />
+              <AuditRow k="features" v={result.audit.features.join(" · ")} />
+              <AuditRow k="response.id" v={result.audit.responseId ?? "none returned"} />
+              <AuditRow k="request.id" v={result.audit.requestId ?? "none returned"} />
+              <AuditRow k="latency" v={`${(result.audit.latencyMs / 1000).toFixed(1)} s`} />
+              <AuditRow k="tokens" v={result.audit.usage ? `${result.audit.usage.total} · ${result.audit.usage.cached} cached` : "not reported"} />
+              <AuditRow k="checked_at" v={new Date(result.audit.checkedAt).toLocaleString()} />
+              <AuditRow k="code_rules_fired" v={String(rulesFired)} />
             </div>
           </section>
         </>
       )}
 
       {log.length > 0 && (
-        <section className="mb-6 rounded-xl border border-line bg-panel p-5 text-sm">
+        <section className="pt-8 pb-6">
           <div className="mb-3 flex items-center justify-between">
-            <div className="font-medium">Your recent checks (this browser only)</div>
-            <button
-              onClick={() => writeLog([])}
-              className="text-xs text-muted underline"
-            >
+            <span className="eyebrow">Your recent checks · this browser only</span>
+            <button onClick={() => writeLog([])} className="mono-label underline hover:!text-paper">
               clear
             </button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-xs">
+          <div className="panel overflow-x-auto">
+            <table className="ledger !min-w-[680px] font-mono !text-[12px]">
               <tbody>
                 {log.map((e, i) => (
-                  <tr key={i} className="border-b border-line/60">
-                    <td className="num py-1.5 pr-3 text-muted">{new Date(e.at).toLocaleTimeString()}</td>
-                    <td className="py-1.5 pr-3">{e.holder}</td>
-                    <td className="py-1.5 pr-3">{e.inflows} inflows</td>
-                    <td className="py-1.5 pr-3 font-mono">{e.model}</td>
-                    <td className={`py-1.5 pr-3 ${e.ok ? "text-free" : "text-danger"}`}>{e.ok ? "SERV ok" : "failed closed"}</td>
-                    <td className="num py-1.5 pr-3">{(e.latencyMs / 1000).toFixed(1)} s</td>
-                    <td className="num py-1.5 pr-3">{formatNaira(e.taxKobo)}</td>
-                    <td className="py-1.5 text-muted">{e.open} open</td>
+                  <tr key={i}>
+                    <td className="text-muted">{new Date(e.at).toLocaleTimeString()}</td>
+                    <td>{e.holder}</td>
+                    <td>{e.inflows} inflows</td>
+                    <td>{e.model}</td>
+                    <td className={e.ok ? "text-ice" : "text-danger"}>{e.ok ? "serv ok" : "failed closed"}</td>
+                    <td>{(e.latencyMs / 1000).toFixed(1)} s</td>
+                    <td>
+                      <Money kobo={e.taxKobo} whole />
+                    </td>
+                    <td className="text-muted">{e.open} open</td>
                   </tr>
                 ))}
               </tbody>
@@ -500,45 +561,51 @@ export default function Checker() {
           </div>
         </section>
       )}
-
-      <footer className="mt-auto border-t border-line pt-5 text-xs leading-relaxed text-muted">
-        An estimate, not tax advice. Personal income tax for residents is filed with your State Internal Revenue Service; 2026 income is filed in 2027
-        (most states ask by 31 March). Only money in is classified; outflows are not deducted automatically. Gifts, refunds, loans and own transfers are
-        treated as not income on official guidance and general principle; where the Act itself is silent, the basis column says so. Statement text goes to
-        SERV Reasoning for classification and is not stored by this app.
-      </footer>
-    </main>
+    </>
   );
 }
 
-function Field(props: { label: string; value: string; onChange: (v: string) => void; hint?: string; invalid?: boolean }) {
+function Field(props: { label: string; value: string; onChange: (v: string) => void; hint?: string; invalid?: boolean; money?: boolean }) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="text-muted">{props.label}</span>
-      <input
-        value={props.value}
-        onChange={(e) => props.onChange(e.target.value)}
-        className={`num rounded-lg border bg-bg px-3 py-2 outline-none focus:border-open ${props.invalid ? "border-danger" : "border-line"}`}
-      />
-      {props.invalid ? <span className="text-xs text-danger">Enter a whole naira amount</span> : props.hint && <span className="text-xs text-muted">{props.hint}</span>}
+    <label className="flex flex-col gap-1.5">
+      <span className="mono-label">{props.label}</span>
+      <div className="relative">
+        {props.money && <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[14px] text-muted">₦</span>}
+        <input
+          value={props.value}
+          onChange={(e) => props.onChange(e.target.value)}
+          inputMode={props.money ? "numeric" : undefined}
+          className={`field num text-[15px] ${props.money ? "pl-7" : ""} ${props.invalid ? "invalid" : ""}`}
+        />
+      </div>
+      {props.invalid ? <span className="text-[12px] text-danger">Enter a whole naira amount</span> : props.hint && <span className="text-[12px] text-muted">{props.hint}</span>}
     </label>
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: "income" | "free" }) {
+function KV({ k, v, strong, dim }: { k: string; v: React.ReactNode; strong?: boolean; dim?: boolean }) {
   return (
-    <div className="rounded-lg border border-line bg-panel-2 p-3">
-      <div className="text-xs text-muted">{label}</div>
-      <div className={`num mt-1 font-medium ${tone === "income" ? "text-income" : tone === "free" ? "text-free" : ""}`}>{value}</div>
+    <div className={`kv ${strong ? "strong" : ""} ${dim ? "dim" : ""}`}>
+      <span>{k}</span>
+      <span className="num text-right">{v}</span>
     </div>
   );
 }
 
-function Row({ k, v, strong, muted, mono }: { k: string; v: string; strong?: boolean; muted?: boolean; mono?: boolean }) {
+function Stat({ label, value, tone }: { label: string; value: React.ReactNode; tone?: string }) {
   return (
-    <div className={`flex justify-between gap-4 py-0.5 ${muted ? "opacity-40" : ""}`}>
+    <div className="bg-ink-2 p-5">
+      <div className="mono-label">{label}</div>
+      <div className={`pixel mt-3 text-[clamp(20px,2.2vw,28px)] leading-none ${tone ?? ""}`}>{value}</div>
+    </div>
+  );
+}
+
+function AuditRow({ k, v, tone }: { k: string; v: string; tone?: string }) {
+  return (
+    <div className="flex justify-between gap-6 border-b border-dashed border-line py-2">
       <span className="text-muted">{k}</span>
-      <span className={`num text-right break-all ${strong ? "font-semibold" : ""} ${mono ? "font-mono text-xs" : ""}`}>{v}</span>
+      <span className={`text-right break-all ${tone ?? ""}`}>{v}</span>
     </div>
   );
 }
