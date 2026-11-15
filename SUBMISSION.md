@@ -22,13 +22,13 @@ Demo link
 
     https://na-income.vercel.app
 
-Write-up (946 characters)
+Write-up (898 characters)
 
-    Na Income? turns a Nigerian bank statement into a 2026 personal income tax estimate under the Nigeria Tax Act 2025, in force since 1 January 2026. Paste a statement and SERV Reasoning reads every inflow and says what it was: client payment, salary, other income, own transfer, gift, loan or refund, quoting the narration it relied on. Code does everything that must not be guessed: amounts in kobo, which categories count as income, the Act's bands and reliefs. When SERV is not sure, such as a bare transfer from a person, it asks one question, and each answer button shows the new tax before you click. Four code rules can only make SERV stricter, and any SERV failure counts every inflow as income, so the figure is never an underestimate. SERV use: chat completions on gpt-5.4-mini, the rulebook as system prompt, reasoning_effort low, strict json_schema output, and serv_shadow_agent with a checkable hint in Careful mode. Track: Open Track.
+    Na Income? turns a Nigerian bank statement into a 2026 personal income tax estimate under the Nigeria Tax Act 2025, in force since 1 January 2026. Paste a CSV or upload the PDF your bank sends: SERV Reasoning reads the rows, and code keeps a row only if its amount appears in the statement and the running balance adds up. SERV then says what each inflow was (client payment, salary, own transfer, gift, loan or refund), quoting the narration. Code does the amounts in kobo, the Act's bands and reliefs. When SERV is not sure, it asks one question, and each answer shows the new tax before you click. Four code rules can only make SERV stricter, and any SERV failure counts every inflow as income, so the figure is never an underestimate. SERV use: gpt-5.4-mini, rulebook system prompt, reasoning_effort low, strict json_schema, serv_shadow_agent in Careful mode. Tests and CI included. Open Track.
 
-Write-up, short version if a field is limited to about 500 characters (438 characters)
+Write-up, short version if a field is limited to about 500 characters (432 characters)
 
-    Na Income? turns a Nigerian bank statement into a 2026 income tax estimate under the Nigeria Tax Act 2025. SERV Reasoning reads every inflow and says what it was (client payment, gift, loan, refund, own transfer), quoting the narration. Code does the amounts, the bands and the reliefs. When SERV is unsure it asks you one question and shows the new tax per answer. Uses gpt-5.4-mini, strict json_schema and serv_shadow_agent. Open Track.
+    Na Income? turns a Nigerian bank statement, CSV or PDF, into a 2026 income tax estimate under the Nigeria Tax Act 2025. SERV Reasoning reads the rows (code checks each against the running balance) and says what each inflow was, quoting the narration. Code does the amounts, bands and reliefs. When SERV is unsure it asks one question and shows the new tax per answer. gpt-5.4-mini, strict json_schema, serv_shadow_agent. Open Track.
 
 ## X post (278 of 280, with the link counted as 23)
 
@@ -64,6 +64,8 @@ Attach the demo video or a screenshot of the questions panel to the post itself 
 - [x] All three samples classify through SERV on production
 - [x] API key not in the repo or the client bundle
 - [x] README: problem, live link, try path, SERV usage, law with sources, what was built, tools
+- [x] PDF statements: upload or paste, rows verified by running balance
+- [x] Tests (npm test) and CI (GitHub Actions)
 - [ ] X post published, link copied
 - [ ] Form submitted before 23:59 UTC
 - [ ] SERV credit balance checked; top up so judges' checks keep working through judging week

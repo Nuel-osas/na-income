@@ -7,6 +7,7 @@ const pixel = Geist_Pixel({ subsets: ["latin"], weight: "variable", axes: ["ELSH
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--f-mono", display: "swap" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://na-income.vercel.app"),
   title: "Na Income? · Your 2026 Nigerian tax from your bank statement",
   description:
     "Paste a bank statement. SERV Reasoning sorts every inflow into client payment, gift, loan, refund or own transfer under the Nigeria Tax Act 2025, and code works out your 2026 personal income tax.",
