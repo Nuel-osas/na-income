@@ -1,0 +1,29 @@
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      # The build needs no SERV key: the API reads it at request time and fails closed without it.
+      - run: npm run build
+      - name: No SERV key in the client bundle
+        run: |
+          if grep -rqE 'serv_[0-9a-f]{20,}' .next/static; then echo "SERV key found in client bundle"; exit 1; fi
