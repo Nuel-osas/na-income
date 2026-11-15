@@ -35,10 +35,10 @@ export function SiteHeader() {
 function Mark() {
   return (
     <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden>
-      <rect x="4" y="18" width="7" height="7" fill="#7b88ff" />
-      <rect x="11" y="11" width="7" height="7" fill="#b9c2ff" />
-      <rect x="18" y="4" width="10" height="21" fill="#2338ff" />
-      <rect x="4" y="25" width="24" height="3" fill="#f2efe8" />
+      <rect x="4" y="18" width="7" height="7" fill="#8d9095" />
+      <rect x="11" y="11" width="7" height="7" fill="#c4c6ca" />
+      <rect x="18" y="4" width="10" height="21" fill="#ffffff" />
+      <rect x="4" y="25" width="24" height="3" fill="#e4e5e7" />
     </svg>
   );
 }
@@ -61,11 +61,11 @@ export function Hero() {
       </div>
       <div className="flex flex-col items-stretch gap-3 lg:items-end">
         <span className="mono-label inline-flex w-fit items-center gap-2 rounded-[4px] border border-line px-3 py-2">
-          <span className="h-[7px] w-[7px] bg-blue-l" /> Live · SERV Reasoning
+          <span className="h-[7px] w-[7px] bg-silver" /> Live · SERV Reasoning
         </span>
         <div className="grid w-full max-w-[440px] grid-cols-2">
-          <div className="panel-blue rounded-r-none p-5">
-            <div className="mono-label !text-ice/90">First ₦800k · rate</div>
+          <div className="panel-silver rounded-r-none p-5">
+            <div className="mono-label !text-ink/60">First ₦800k · rate</div>
             <div className="pixel mt-3 text-[56px] leading-none">0%</div>
           </div>
           <div className="panel rounded-l-none border-l-0 p-5">
@@ -89,7 +89,7 @@ export function SplitBar() {
       <a href="#how">
         How it works <span className="mini-arrow">↗</span>
       </a>
-      <a href="#check" className="blue">
+      <a href="#check" className="accent">
         Check a statement <span className="mini-arrow">↓</span>
       </a>
     </div>
@@ -134,10 +134,10 @@ export function HowItWorks() {
       <SectionHead n="05" kicker="How it works" title="Judgment, then arithmetic" />
       <div className="grid gap-px overflow-hidden rounded-[4px] border border-line bg-line md:grid-cols-3">
         {STEPS.map((s, i) => (
-          <div key={s.n} className={`relative p-6 ${i === 0 ? "bg-blue" : "bg-ink-2"}`}>
-            <div className={`mono-label ${i === 0 ? "!text-ice/90" : ""}`}>{s.n} / step</div>
+          <div key={s.n} className={`relative p-6 ${i === 0 ? "silver-fill" : "bg-ink-2"}`}>
+            <div className={`mono-label ${i === 0 ? "!text-ink/60" : ""}`}>{s.n} / step</div>
             <div className="display mt-8 text-[34px]">{s.title}</div>
-            <p className={`mt-4 text-[14.5px] leading-relaxed ${i === 0 ? "text-paper/90" : "text-paper/75"}`}>{s.body}</p>
+            <p className={`mt-4 text-[14.5px] leading-relaxed ${i === 0 ? "text-ink/80" : "text-paper/75"}`}>{s.body}</p>
           </div>
         ))}
       </div>
@@ -165,7 +165,7 @@ export function LawTable() {
   return (
     <section id="law" className="scroll-mt-24 pb-20">
       <SectionHead n="06" kicker="The law it applies" title="Every rule, cited">
-        <a href={NTA_PDF} target="_blank" rel="noreferrer" className="mono-label !text-blue-l hover:!text-ice">
+        <a href={NTA_PDF} target="_blank" rel="noreferrer" className="mono-label !text-silver hover:!text-paper">
           Read the certified Act ↗
         </a>
       </SectionHead>
@@ -197,7 +197,7 @@ export function SiteFooter() {
         </p>
         <div className="flex flex-col gap-2 md:items-end">
           <span className="mono-label">Built for SERV Hackathon 02 · Open Track</span>
-          <a href={REPO} target="_blank" rel="noreferrer" className="mono-label !text-blue-l hover:!text-ice">
+          <a href={REPO} target="_blank" rel="noreferrer" className="mono-label !text-silver hover:!text-paper">
             Source on GitHub ↗
           </a>
         </div>

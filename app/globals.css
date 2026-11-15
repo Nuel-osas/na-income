@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
-/* Design language from Setsuna (our own Monad Metropolis app, src/styles/app-brand.css):
-   ink ground with a ruled 80px grid and one blue glow, Geist Pixel display type and figures,
-   mono uppercase eyebrows with an outlined square, square-edged panels on thin rules,
-   blue and ice accents, warm paper text. */
+/* Structure from Setsuna (our own Monad Metropolis app, src/styles/app-brand.css): ruled grid
+   ground, Geist Pixel display type and figures, mono uppercase eyebrows with an outlined square,
+   square-edged panels on thin rules. Palette: black, white and silver only. Feature blocks are
+   brushed silver with black type; primary actions are white; accent words are chrome. */
 
 :root {
-  --ink: #07080c;
-  --ink-2: #0e1017;
-  --ink-3: #161923;
-  --paper: #f2efe8;
-  --blue: #2338ff;
-  --blue-l: #7b88ff;
-  --ice: #b9c2ff;
-  --line: rgba(242, 239, 232, 0.09);
-  --line-2: rgba(242, 239, 232, 0.14);
-  --surface: rgba(242, 239, 232, 0.035);
-  --surface-2: rgba(242, 239, 232, 0.06);
-  --muted: #8e8b84;
-  --warn: #f1c145;
-  --danger: #ff5c5a;
+  --ink: #000000;
+  --ink-2: #0b0b0c;
+  --ink-3: #141416;
+  --paper: #ffffff;
+  --silver: #c4c6ca;
+  --silver-l: #e4e5e7;
+  --silver-d: #8d9095;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-2: rgba(255, 255, 255, 0.15);
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface-2: rgba(255, 255, 255, 0.07);
+  --muted: #8c8d90;
+  --danger: #ff6b6b;
+  --metal: linear-gradient(135deg, #fbfbfb 0%, #d6d8db 28%, #a9acb1 52%, #e8e9eb 76%, #c3c5c9 100%);
   --r: 4px;
 }
 
@@ -28,12 +28,11 @@
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-paper: var(--paper);
-  --color-blue: var(--blue);
-  --color-blue-l: var(--blue-l);
-  --color-ice: var(--ice);
+  --color-silver: var(--silver);
+  --color-silver-l: var(--silver-l);
+  --color-silver-d: var(--silver-d);
   --color-line: var(--line);
   --color-muted: var(--muted);
-  --color-warn: var(--warn);
   --color-danger: var(--danger);
   --font-sans: var(--f-sans);
   --font-mono: var(--f-mono);
@@ -49,9 +48,9 @@ body {
   font-family: var(--f-sans), system-ui, sans-serif;
   background-color: var(--ink);
   background-image:
-    radial-gradient(60% 45% at 50% -8%, rgba(35, 56, 255, 0.22), transparent 70%),
-    linear-gradient(rgba(242, 239, 232, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(242, 239, 232, 0.035) 1px, transparent 1px);
+    radial-gradient(60% 45% at 50% -8%, rgba(255, 255, 255, 0.09), transparent 70%),
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 100% 100%, 80px 80px, 80px 80px;
   background-position: 0 0, -1px -1px, -1px -1px;
   background-attachment: fixed;
@@ -59,8 +58,8 @@ body {
 }
 
 ::selection {
-  background: var(--blue);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
 }
 
 @layer components {
@@ -84,11 +83,11 @@ body {
   content: "";
   width: 7px;
   height: 7px;
-  border: 1.5px solid var(--blue-l);
+  border: 1.5px solid var(--silver);
   flex: none;
 }
 .eyebrow.solid::before {
-  background: var(--blue-l);
+  background: var(--silver);
 }
 .mono-label {
   font-family: var(--f-mono), ui-monospace, monospace;
@@ -111,7 +110,10 @@ body {
   letter-spacing: -0.01em;
 }
 .display .accent {
-  color: var(--blue-l);
+  background: var(--metal);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 /* The naira sign is drawn in Inter so pixel figures never fall back mid-number. */
 .cur {
@@ -126,23 +128,27 @@ body {
   width: 220px;
   height: 20px;
   background:
-    linear-gradient(var(--blue-l), var(--blue-l)) 0 10px / 10px 10px no-repeat,
-    linear-gradient(var(--ice), var(--ice)) 10px 0 / 10px 10px no-repeat,
-    linear-gradient(90deg, var(--blue), var(--blue-l) 55%, var(--paper)) 20px 10px / 200px 10px no-repeat;
+    linear-gradient(var(--silver-d), var(--silver-d)) 0 10px / 10px 10px no-repeat,
+    linear-gradient(var(--silver-l), var(--silver-l)) 10px 0 / 10px 10px no-repeat,
+    linear-gradient(90deg, #3a3b3e, var(--silver) 55%, var(--paper)) 20px 10px / 200px 10px no-repeat;
 }
 
 /* ── surfaces ─────────────────────────────────────────────────────────── */
 .panel {
   border: 1px solid var(--line-2);
   border-radius: var(--r);
-  background: rgba(14, 16, 23, 0.82);
+  background: rgba(11, 11, 12, 0.85);
   backdrop-filter: blur(2px);
 }
-.panel-blue {
-  border: 1px solid rgba(242, 239, 232, 0.18);
+.panel-silver,
+.silver-fill {
+  background: var(--metal);
+  color: var(--ink);
+}
+.panel-silver {
+  border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: var(--r);
-  background: var(--blue);
-  box-shadow: 0 30px 80px rgba(35, 56, 255, 0.18);
+  box-shadow: 0 30px 80px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 .rule-t {
   border-top: 1px solid var(--line);
@@ -160,9 +166,9 @@ body {
   height: 120px;
   pointer-events: none;
   background:
-    linear-gradient(var(--sq-a, rgba(185, 194, 255, 0.85)), var(--sq-a, rgba(185, 194, 255, 0.85))) 40px 0 / 40px 40px no-repeat,
-    linear-gradient(var(--sq-b, rgba(242, 239, 232, 0.55)), var(--sq-b, rgba(242, 239, 232, 0.55))) 80px 40px / 40px 40px no-repeat,
-    linear-gradient(var(--sq-c, rgba(123, 136, 255, 0.6)), var(--sq-c, rgba(123, 136, 255, 0.6))) 0 80px / 40px 40px no-repeat;
+    linear-gradient(var(--sq-a, rgba(0, 0, 0, 0.2)), var(--sq-a, rgba(0, 0, 0, 0.2))) 40px 0 / 40px 40px no-repeat,
+    linear-gradient(var(--sq-b, rgba(255, 255, 255, 0.55)), var(--sq-b, rgba(255, 255, 255, 0.55))) 80px 40px / 40px 40px no-repeat,
+    linear-gradient(var(--sq-c, rgba(0, 0, 0, 0.32)), var(--sq-c, rgba(0, 0, 0, 0.32))) 0 80px / 40px 40px no-repeat;
 }
 
 .pix-deco.bottom {
@@ -176,14 +182,14 @@ body {
   width: 100%;
   border: 1px solid var(--line-2);
   border-radius: var(--r);
-  background: rgba(7, 8, 12, 0.7);
+  background: rgba(0, 0, 0, 0.7);
   color: var(--paper);
   padding: 10px 12px;
   outline: none;
   transition: border-color 0.2s ease;
 }
 .field:focus {
-  border-color: var(--blue-l);
+  border-color: var(--silver);
 }
 .field.invalid {
   border-color: var(--danger);
@@ -195,7 +201,7 @@ body {
   padding: 4px;
   border: 1px solid var(--line-2);
   border-radius: var(--r);
-  background: rgba(7, 8, 12, 0.7);
+  background: rgba(0, 0, 0, 0.7);
 }
 .tab {
   flex: 1;
@@ -209,9 +215,8 @@ body {
   transition: background 0.2s ease, color 0.2s ease;
 }
 .tab[aria-pressed="true"] {
-  background: var(--surface-2);
-  color: var(--paper);
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  background: var(--metal);
+  color: var(--ink);
 }
 
 .cta {
@@ -223,8 +228,8 @@ body {
   min-height: 56px;
   padding: 0 8px 0 20px;
   border-radius: var(--r);
-  background: var(--blue);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--f-mono), ui-monospace, monospace;
   font-size: 13px;
   font-weight: 500;
@@ -233,7 +238,7 @@ body {
   transition: background 0.2s ease, transform 0.15s ease;
 }
 .cta:hover:not(:disabled) {
-  background: #3347ff;
+  background: var(--silver-l);
 }
 .cta:active:not(:disabled) {
   transform: scale(0.99);
@@ -248,7 +253,8 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 2px;
-  background: rgba(242, 239, 232, 0.14);
+  background: var(--ink);
+  color: var(--paper);
   font-family: var(--f-sans), system-ui, sans-serif;
   font-size: 16px;
   letter-spacing: 0;
@@ -272,16 +278,17 @@ body {
   padding: 9px 12px;
   border: 1px solid var(--line-2);
   border-radius: var(--r);
-  background: rgba(7, 8, 12, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   font-size: 14px;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 .option:hover {
-  border-color: rgba(185, 194, 255, 0.5);
+  border-color: var(--silver);
 }
 .option[aria-pressed="true"] {
-  border-color: var(--blue);
-  background: var(--blue);
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
 }
 .option .preview {
   font-family: var(--f-mono), ui-monospace, monospace;
@@ -289,7 +296,7 @@ body {
   color: var(--muted);
 }
 .option[aria-pressed="true"] .preview {
-  color: var(--ice);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 /* category chips */
@@ -304,26 +311,28 @@ body {
   white-space: nowrap;
 }
 .chip-income {
-  background: rgba(35, 56, 255, 0.28);
-  color: var(--ice);
-  box-shadow: inset 0 0 0 1px rgba(123, 136, 255, 0.45);
+  background: var(--metal);
+  color: var(--ink);
 }
 .chip-free {
-  background: rgba(242, 239, 232, 0.06);
-  color: var(--paper);
+  background: transparent;
+  color: var(--muted);
   box-shadow: inset 0 0 0 1px var(--line-2);
 }
 .chip-open {
-  color: var(--ice);
-  box-shadow: inset 0 0 0 1px rgba(185, 194, 255, 0.6);
-  background: repeating-linear-gradient(135deg, rgba(185, 194, 255, 0.08) 0 4px, transparent 4px 8px);
+  color: var(--paper);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0 4px, transparent 4px 8px);
 }
 .tag-rule {
   display: inline-block;
+  padding: 2px 6px;
+  border-left: 2px solid var(--silver);
+  background: rgba(255, 255, 255, 0.06);
   font-family: var(--f-mono), ui-monospace, monospace;
   font-size: 10.5px;
   letter-spacing: 0.06em;
-  color: var(--warn);
+  color: var(--silver-l);
 }
 
 /* split bar, like Setsuna's landing CTA strip */
@@ -333,7 +342,7 @@ body {
   border: 1px solid var(--line-2);
   border-radius: var(--r);
   overflow: hidden;
-  background: rgba(14, 16, 23, 0.85);
+  background: rgba(11, 11, 12, 0.88);
 }
 @media (min-width: 900px) {
   .split {
@@ -363,11 +372,16 @@ body {
 .split a:hover {
   background: var(--surface-2);
 }
-.split a.blue {
-  background: var(--blue);
+.split a.accent {
+  background: var(--metal);
+  color: var(--ink);
 }
-.split a.blue:hover {
-  background: #3347ff;
+.split a.accent:hover {
+  filter: brightness(1.06);
+}
+.split a.accent .mini-arrow {
+  background: var(--ink);
+  color: var(--paper);
 }
 .split .mini-arrow {
   display: inline-grid;
@@ -443,7 +457,7 @@ body {
   position: absolute;
   inset: 0;
   width: 30%;
-  background: linear-gradient(90deg, transparent, var(--blue-l), var(--ice));
+  background: linear-gradient(90deg, transparent, var(--silver), var(--paper));
   animation: scan 1.4s steps(14) infinite;
 }
 @keyframes scan {
@@ -461,11 +475,11 @@ body {
 }
 @keyframes flash {
   from {
-    color: var(--ice);
-    text-shadow: 0 0 28px rgba(185, 194, 255, 0.75);
+    color: var(--paper);
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.95);
   }
   to {
-    color: var(--paper);
+    color: var(--ink);
     text-shadow: none;
   }
 }
