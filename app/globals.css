@@ -1,43 +1,496 @@
 @import "tailwindcss";
 
+/* Design language from Setsuna (our own Monad Metropolis app, src/styles/app-brand.css):
+   ink ground with a ruled 80px grid and one blue glow, Geist Pixel display type and figures,
+   mono uppercase eyebrows with an outlined square, square-edged panels on thin rules,
+   blue and ice accents, warm paper text. */
+
 :root {
-  --bg: #0b0d10;
-  --panel: #12161b;
-  --panel-2: #181d23;
-  --line: #262d36;
-  --text: #e8ecf1;
-  --muted: #8b95a3;
-  --income: #f2a65a;
-  --free: #4cc38a;
-  --open: #9aa7ff;
-  --danger: #ff6b6b;
+  --ink: #07080c;
+  --ink-2: #0e1017;
+  --ink-3: #161923;
+  --paper: #f2efe8;
+  --blue: #2338ff;
+  --blue-l: #7b88ff;
+  --ice: #b9c2ff;
+  --line: rgba(242, 239, 232, 0.09);
+  --line-2: rgba(242, 239, 232, 0.14);
+  --surface: rgba(242, 239, 232, 0.035);
+  --surface-2: rgba(242, 239, 232, 0.06);
+  --muted: #8e8b84;
+  --warn: #f1c145;
+  --danger: #ff5c5a;
+  --r: 4px;
 }
 
 @theme inline {
-  --color-bg: var(--bg);
-  --color-panel: var(--panel);
-  --color-panel-2: var(--panel-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-paper: var(--paper);
+  --color-blue: var(--blue);
+  --color-blue-l: var(--blue-l);
+  --color-ice: var(--ice);
   --color-line: var(--line);
-  --color-text: var(--text);
   --color-muted: var(--muted);
-  --color-income: var(--income);
-  --color-free: var(--free);
-  --color-open: var(--open);
+  --color-warn: var(--warn);
   --color-danger: var(--danger);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--f-sans);
+  --font-mono: var(--f-mono);
+  --font-pixel: var(--f-pixel);
 }
 
-html,
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--bg);
-  color: var(--text);
+  color: var(--paper);
+  font-family: var(--f-sans), system-ui, sans-serif;
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(60% 45% at 50% -8%, rgba(35, 56, 255, 0.22), transparent 70%),
+    linear-gradient(rgba(242, 239, 232, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242, 239, 232, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 80px 80px, 80px 80px;
+  background-position: 0 0, -1px -1px, -1px -1px;
+  background-attachment: fixed;
+  background-repeat: no-repeat, repeat, repeat;
 }
 
-body {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+::selection {
+  background: var(--blue);
+  color: var(--paper);
 }
 
+@layer components {
 .num {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ── type ─────────────────────────────────────────────────────────────── */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--blue-l);
+  flex: none;
+}
+.eyebrow.solid::before {
+  background: var(--blue-l);
+}
+.mono-label {
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pixel {
+  font-family: var(--f-pixel), ui-monospace, monospace;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.display {
+  font-family: var(--f-pixel), ui-monospace, monospace;
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+.display .accent {
+  color: var(--blue-l);
+}
+/* The naira sign is drawn in Inter so pixel figures never fall back mid-number. */
+.cur {
+  font-family: var(--f-sans), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.78em;
+  margin-right: 0.04em;
+  vertical-align: 0.06em;
+}
+.pixel-bar {
+  display: block;
+  width: 220px;
+  height: 20px;
+  background:
+    linear-gradient(var(--blue-l), var(--blue-l)) 0 10px / 10px 10px no-repeat,
+    linear-gradient(var(--ice), var(--ice)) 10px 0 / 10px 10px no-repeat,
+    linear-gradient(90deg, var(--blue), var(--blue-l) 55%, var(--paper)) 20px 10px / 200px 10px no-repeat;
+}
+
+/* ── surfaces ─────────────────────────────────────────────────────────── */
+.panel {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: rgba(14, 16, 23, 0.82);
+  backdrop-filter: blur(2px);
+}
+.panel-blue {
+  border: 1px solid rgba(242, 239, 232, 0.18);
+  border-radius: var(--r);
+  background: var(--blue);
+  box-shadow: 0 30px 80px rgba(35, 56, 255, 0.18);
+}
+.rule-t {
+  border-top: 1px solid var(--line);
+}
+.rule-b {
+  border-bottom: 1px solid var(--line);
+}
+
+/* decorative pixel squares in a card corner */
+.pix-deco {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--sq-a, rgba(185, 194, 255, 0.85)), var(--sq-a, rgba(185, 194, 255, 0.85))) 40px 0 / 40px 40px no-repeat,
+    linear-gradient(var(--sq-b, rgba(242, 239, 232, 0.55)), var(--sq-b, rgba(242, 239, 232, 0.55))) 80px 40px / 40px 40px no-repeat,
+    linear-gradient(var(--sq-c, rgba(123, 136, 255, 0.6)), var(--sq-c, rgba(123, 136, 255, 0.6))) 0 80px / 40px 40px no-repeat;
+}
+
+.pix-deco.bottom {
+  top: auto;
+  bottom: 0;
+  transform: scaleY(-1);
+}
+
+/* ── controls ─────────────────────────────────────────────────────────── */
+.field {
+  width: 100%;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: rgba(7, 8, 12, 0.7);
+  color: var(--paper);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.field:focus {
+  border-color: var(--blue-l);
+}
+.field.invalid {
+  border-color: var(--danger);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: rgba(7, 8, 12, 0.7);
+}
+.tab {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 2px;
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.tab[aria-pressed="true"] {
+  background: var(--surface-2);
+  color: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 8px 0 20px;
+  border-radius: var(--r);
+  background: var(--blue);
+  color: var(--paper);
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.cta:hover:not(:disabled) {
+  background: #3347ff;
+}
+.cta:active:not(:disabled) {
+  transform: scale(0.99);
+}
+.cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.arrow-tile {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  background: rgba(242, 239, 232, 0.14);
+  font-family: var(--f-sans), system-ui, sans-serif;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+.btn-paper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-radius: var(--r);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.option {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: rgba(7, 8, 12, 0.5);
+  font-size: 14px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.option:hover {
+  border-color: rgba(185, 194, 255, 0.5);
+}
+.option[aria-pressed="true"] {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+.option .preview {
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.option[aria-pressed="true"] .preview {
+  color: var(--ice);
+}
+
+/* category chips */
+.chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.chip-income {
+  background: rgba(35, 56, 255, 0.28);
+  color: var(--ice);
+  box-shadow: inset 0 0 0 1px rgba(123, 136, 255, 0.45);
+}
+.chip-free {
+  background: rgba(242, 239, 232, 0.06);
+  color: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.chip-open {
+  color: var(--ice);
+  box-shadow: inset 0 0 0 1px rgba(185, 194, 255, 0.6);
+  background: repeating-linear-gradient(135deg, rgba(185, 194, 255, 0.08) 0 4px, transparent 4px 8px);
+}
+.tag-rule {
+  display: inline-block;
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--warn);
+}
+
+/* split bar, like Setsuna's landing CTA strip */
+.split {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: rgba(14, 16, 23, 0.85);
+}
+@media (min-width: 900px) {
+  .split {
+    grid-template-columns: 1fr 260px 260px;
+  }
+}
+.split > * {
+  padding: 22px 24px;
+}
+.split a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--line-2);
+  transition: background 0.2s ease;
+}
+@media (min-width: 900px) {
+  .split a {
+    border-top: 0;
+    border-left: 1px solid var(--line-2);
+  }
+}
+.split a:hover {
+  background: var(--surface-2);
+}
+.split a.blue {
+  background: var(--blue);
+}
+.split a.blue:hover {
+  background: #3347ff;
+}
+.split .mini-arrow {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-sans), system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+/* key/value rows */
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 14px;
+}
+.kv:last-child {
+  border-bottom: 0;
+}
+.kv > span:first-child {
+  color: var(--muted);
+}
+.kv.strong > span:last-child {
+  font-weight: 600;
+}
+.kv.dim {
+  opacity: 0.38;
+}
+
+/* table */
+.ledger {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.ledger th {
+  padding: 12px 16px;
+  text-align: left;
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-2);
+}
+.ledger td {
+  padding: 12px 16px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.ledger tr:hover td {
+  background: var(--surface);
+}
+
+/* loading bar */
+.scan {
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  background: var(--line);
+}
+.scan::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, var(--blue-l), var(--ice));
+  animation: scan 1.4s steps(14) infinite;
+}
+@keyframes scan {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+
+/* the headline figure flashes ice when an answer moves it */
+.flash {
+  animation: flash 0.9s ease-out;
+}
+@keyframes flash {
+  from {
+    color: var(--ice);
+    text-shadow: 0 0 28px rgba(185, 194, 255, 0.75);
+  }
+  to {
+    color: var(--paper);
+    text-shadow: none;
+  }
+}
+.rise {
+  animation: rise 0.5s ease-out both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .flash,
+  .rise,
+  .scan::after {
+    animation: none;
+  }
+}
 }

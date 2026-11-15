@@ -91,7 +91,7 @@ Everything in this repository, on 15 November 2026: the statement parser, the ko
 
 ## 8. Libraries and AI tools
 
-Next.js 16 (App Router), React 19, Tailwind CSS 4, the OpenAI Node SDK (pointed at SERV), zod. Deployed on Vercel. Claude Code (Anthropic) was used as a coding assistant throughout.
+Next.js 16 (App Router), React 19, Tailwind CSS 4, the OpenAI Node SDK (pointed at SERV), zod. Deployed on Vercel. Fonts: Inter, Geist Pixel and JetBrains Mono via next/font. The visual language (ink grid ground, pixel display type, mono eyebrows, blue and ice accents) is carried over from our own earlier project, Setsuna. Claude Code (Anthropic) was used as a coding assistant throughout.
 
 ## 9. Limits
 
