@@ -1,5 +1,5 @@
 import Checker from "@/components/Checker";
-import { Hero, HowItWorks, LawTable, SiteFooter, SiteHeader, SplitBar } from "@/components/Sections";
+import { Hero, HowItWorks, LawTable, Pricing, SiteFooter, SiteHeader, SplitBar } from "@/components/Sections";
 
 export default function Home() {
   return (
@@ -10,6 +10,7 @@ export default function Home() {
         <SplitBar />
         <Checker />
         <HowItWorks />
+        <Pricing />
         <LawTable />
       </main>
       <SiteFooter />
