@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { applyGuards, type Inflow } from "@/lib/classify";
-import { parseStatement } from "@/lib/statement";
-import { classifyWithServ } from "@/lib/serv";
+import { verifyExtracted, type CheckedRow, type VerifyResult } from "@/lib/extract";
+import { parseStatement, type Row } from "@/lib/statement";
+import { classifyWithServ, extractWithServ, type ServAudit } from "@/lib/serv";
 
-export const maxDuration = 90;
+export const maxDuration = 120;
 
 const Body = z.object({
   holderName: z.string().trim().min(2).max(100),
@@ -34,13 +35,35 @@ export async function POST(req: Request) {
     return Response.json({ error: "Send holderName (2-100 chars) and statement text." }, { status: 400 });
   }
 
-  const parsed = parseStatement(body.statement);
-  const inflows: Inflow[] = parsed.rows
+  // CSV with a header row is parsed by code alone. Anything else (text copied from a PDF, or pulled
+  // out of an uploaded PDF in the browser) is read by SERV and then verified by code.
+  const csv = parseStatement(body.statement);
+  let mode: "csv" | "text" = "csv";
+  let rows: (Row | CheckedRow)[] = csv.rows;
+  let skipped = csv.skipped;
+  let extraction: { audit: ServAudit; stats: VerifyResult["stats"] } | null = null;
+
+  if (csv.rows.length === 0) {
+    mode = "text";
+    const { extracted, audit: exAudit } = await extractWithServ(body.statement);
+    if (!extracted) {
+      return Response.json(
+        { error: `SERV could not read rows from that text, so nothing was counted. (${exAudit.error ?? "no rows"})`, extraction: { audit: exAudit } },
+        { status: 502 },
+      );
+    }
+    const v = verifyExtracted(body.statement, extracted);
+    rows = v.rows;
+    skipped = v.skipped;
+    extraction = { audit: exAudit, stats: v.stats };
+  }
+
+  const inflows: Inflow[] = rows
     .filter((r) => r.creditKobo > 0)
-    .map((r) => ({ id: r.id, date: r.date, narration: r.narration, amountKobo: r.creditKobo }));
+    .map((r) => ({ id: r.id, date: r.date, narration: r.narration, amountKobo: r.creditKobo, check: "check" in r ? r.check : undefined }));
 
   if (inflows.length === 0) {
-    return Response.json({ error: "No money-in rows found in that statement.", skipped: parsed.skipped, columns: parsed.columns }, { status: 422 });
+    return Response.json({ error: "No money-in rows found in that statement.", skipped, columns: csv.columns, extraction }, { status: 422 });
   }
   if (inflows.length > MAX_INFLOWS) {
     return Response.json({ error: `This demo checks up to ${MAX_INFLOWS} money-in rows at a time; that statement has ${inflows.length}.` }, { status: 413 });
@@ -50,10 +73,12 @@ export async function POST(req: Request) {
   const decided = applyGuards(inflows, lines, body.holderName);
 
   return Response.json({
+    mode,
     lines: decided,
-    outflowCount: parsed.rows.length - inflows.length,
-    skipped: parsed.skipped,
-    columns: parsed.columns,
+    outflowCount: rows.length - inflows.length,
+    skipped,
+    columns: csv.columns,
+    extraction,
     audit: { ...audit, checkedAt: new Date().toISOString(), inflows: inflows.length },
   });
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { CATEGORIES, COUNTS_AS_INCOME, INSTRUCTION_RE, PLATFORM_RE, type Category } from "./categories";
 import { computeTax, type TaxResult } from "./tax";
+import type { RowCheck } from "./extract";
 
 export const ModelLineSchema = z.object({
   id: z.string(),
@@ -13,7 +14,7 @@ export const ModelLineSchema = z.object({
 export const ModelOutputSchema = z.object({ lines: z.array(ModelLineSchema) });
 export type ModelLine = z.infer<typeof ModelLineSchema>;
 
-export type Inflow = { id: string; date: string; narration: string; amountKobo: number };
+export type Inflow = { id: string; date: string; narration: string; amountKobo: number; check?: RowCheck };
 
 export type Decided = Inflow & {
   category: Category; // best classification
